@@ -43,3 +43,9 @@
    ```powershell
    docker run --rm -v "${PWD}:/app" -w /app composer:2.11.1 update --no-install --no-interaction
    ```
+
+3. Declarei o `psr/http-factory`, que o código usa direto
+
+   ```bash
+   docker compose run --rm php composer require psr/http-factory:1.1.0
+   ```
