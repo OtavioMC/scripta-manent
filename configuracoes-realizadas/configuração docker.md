@@ -81,3 +81,50 @@
    ```bash
    docker compose build php
    ```
+
+6. Separei a parte do nginx que vale pra desenvolvimento e produção em `docker/nginx/comum.conf`, já com os cabeçalhos de segurança
+
+   ```nginx
+   listen 80;
+   root /app/public;
+   server_tokens off;
+
+   add_header X-Content-Type-Options "nosniff" always;
+   add_header X-Frame-Options "DENY" always;
+   add_header Referrer-Policy "same-origin" always;
+   add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'none'" always;
+   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+   location / {
+       try_files $uri /index.php$is_args$args;
+   }
+
+   location = /index.php {
+       fastcgi_pass php:9000;
+       include fastcgi_params;
+       fastcgi_param SCRIPT_FILENAME /app/public/index.php;
+       fastcgi_hide_header X-Powered-By;
+   }
+
+   location ~ \.php$ {
+       return 404;
+   }
+   ```
+
+   O `docker/nginx/site.conf` ficou só com
+
+   ```nginx
+   server {
+       include /etc/nginx/comum.conf;
+   }
+   ```
+
+   e no `compose.yaml` montei o arquivo novo no serviço `web`
+
+   ```yaml
+   - ./docker/nginx/comum.conf:/etc/nginx/comum.conf:ro
+   ```
+
+   ```bash
+   docker compose up -d --force-recreate web
+   ```

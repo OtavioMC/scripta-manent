@@ -13,6 +13,7 @@ services:
     ports:
       - "127.0.0.1:8080:80"
     volumes:
+      - ./docker/nginx/comum.conf:/etc/nginx/comum.conf:ro
       - ./docker/nginx/site.conf:/etc/nginx/conf.d/default.conf:ro
       - ./public:/app/public:ro
     depends_on:
