@@ -5,5 +5,6 @@ WORKDIR /app
 
 FROM base AS dev
 RUN apk add --no-cache git \
+    && git config --system --add safe.directory /app \
     && cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 COPY --from=composer /usr/bin/composer /usr/bin/composer

@@ -69,3 +69,15 @@
    ```
 
    O site fica em `http://localhost:8080`.
+
+5. No alvo `dev` do `Dockerfile` liberei a pasta do projeto pro Git de dentro do contêiner
+
+   ```dockerfile
+   RUN apk add --no-cache git \
+       && git config --system --add safe.directory /app \
+       && cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+   ```
+
+   ```bash
+   docker compose build php
+   ```

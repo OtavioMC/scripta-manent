@@ -14,6 +14,8 @@
     "psr/http-server-middleware": "1.0.2"
   },
   "require-dev": {
+    "captainhook/captainhook": "5.29.2",
+    "captainhook/hook-installer": "1.0.5",
     "deptrac/deptrac": "4.7.2",
     "phpstan/phpstan": "2.3.5",
     "phpunit/phpunit": "13.4.6",
@@ -40,6 +42,9 @@
       "php": "8.4.27"
     },
     "optimize-autoloader": true,
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "captainhook/hook-installer": true
+    }
   }
 }
