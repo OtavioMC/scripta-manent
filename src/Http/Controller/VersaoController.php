@@ -13,12 +13,17 @@ final readonly class VersaoController implements RequestHandlerInterface
 {
     public function __construct(
         private ResponseFactoryInterface $respostas,
-        public string $versao,
+        private string $versao,
     ) {
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->respostas->createResponse(501);
+        $resposta = $this->respostas->createResponse(200)
+            ->withHeader('Content-Type', 'text/plain; charset=utf-8')
+            ->withHeader('Cache-Control', 'no-store');
+        $resposta->getBody()->write($this->versao);
+
+        return $resposta;
     }
 }
