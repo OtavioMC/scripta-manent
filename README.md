@@ -72,7 +72,7 @@ TDD com PHPUnit, em três níveis.
 
 VPS da Hetzner com Docker Compose, atrás da Cloudflare (DNS, HTTPS e um tunnel, então o servidor não tem porta web aberta). Banco, Redis e Gotenberg só existem na rede interna.
 
-O GitHub Actions roda lint, PHPStan, Deptrac, testes e `composer audit` em todo push. Nas tags, gera a imagem, publica no GitHub Container Registry e faz o deploy depois que eu aprovo.
+O GitHub Actions roda lint, PHPStan, Deptrac, testes e `composer audit` em todo push. Nos pushes na `main`, gera a imagem e publica no GitHub Container Registry. Depois que eu aprovo, o servidor percebe a imagem nova em até um minuto, baixa e reinicia sozinho, sem nenhuma porta aberta para o GitHub.
 
 O ambiente online pede usuário e senha. O administrador tem uma credencial própria no `.env`, guardada como hash, que libera remover vínculos e restaurar os dados de exemplo. Não tem tabela de usuários porque eu não queria mexer no modelo.
 
