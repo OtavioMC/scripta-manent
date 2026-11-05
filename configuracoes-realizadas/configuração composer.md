@@ -49,3 +49,13 @@
    ```bash
    docker compose run --rm php composer require psr/http-factory:1.1.0
    ```
+
+4. Criei o script que confere a sintaxe de todos os arquivos PHP
+
+   ```json
+   "sintaxe": "find config public src tests -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null"
+   ```
+
+   ```bash
+   docker compose run --rm php composer sintaxe
+   ```

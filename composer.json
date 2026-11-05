@@ -36,6 +36,7 @@
     "analise": "phpstan analyse --memory-limit=512M",
     "camadas": "deptrac analyse --no-progress",
     "estilo": "phpcs",
+    "sintaxe": "find config public src tests -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null",
     "testes": "phpunit"
   },
   "config": {
