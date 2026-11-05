@@ -13,6 +13,9 @@
     "psr/http-server-handler": "1.0.2",
     "psr/http-server-middleware": "1.0.2"
   },
+  "require-dev": {
+    "phpunit/phpunit": "13.4.6"
+  },
   "autoload": {
     "psr-4": {
       "ScriptaManent\\": "src/"
@@ -22,6 +25,9 @@
     "psr-4": {
       "ScriptaManent\\Tests\\": "tests/"
     }
+  },
+  "scripts": {
+    "testes": "phpunit"
   },
   "config": {
     "platform": {
