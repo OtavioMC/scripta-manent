@@ -39,7 +39,8 @@ final readonly class Roteador implements RequestHandlerInterface
         $resultado = $this->despachante->dispatch($metodo, $caminho);
 
         return match ($resultado[0]) {
-            Dispatcher::FOUND => $this->handlerEncontrado($resultado[1])->handle($request),
+            Dispatcher::FOUND => $this->handlerEncontrado($resultado[1])
+                ->handle($this->comParametros($request, $resultado[2])),
             Dispatcher::METHOD_NOT_ALLOWED => $this->metodoNaoPermitido($metodo, $caminho, $resultado[1]),
             default => $this->erro(404, sprintf('Nenhuma página responde no endereço %s.', $caminho)),
         };
@@ -52,6 +53,19 @@ final readonly class Roteador implements RequestHandlerInterface
         }
 
         return $handler;
+    }
+
+    private function comParametros(ServerRequestInterface $request, mixed $parametros): ServerRequestInterface
+    {
+        if (!is_array($parametros)) {
+            throw new UnexpectedValueException('O fast-route não informou os parâmetros do caminho.');
+        }
+
+        foreach ($parametros as $nome => $valor) {
+            $request = $request->withAttribute((string) $nome, $valor);
+        }
+
+        return $request;
     }
 
     private function metodoNaoPermitido(string $metodo, string $caminho, mixed $aceitos): ResponseInterface
