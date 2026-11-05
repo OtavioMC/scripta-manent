@@ -17,13 +17,37 @@ final class RoteadorTest extends TestCase
 {
     public function testEntregaARequisicaoAoHandlerDaRota(): void
     {
-        $roteador = new Roteador(new Psr17Factory(), [
-            ['GET', '/versao', $this->handlerQueResponde('resposta da versão')],
-        ]);
-
-        $resposta = $roteador->handle(new ServerRequest('GET', '/versao'));
+        $resposta = $this->roteador()->handle(new ServerRequest('GET', '/versao'));
 
         self::assertSame('resposta da versão', (string) $resposta->getBody());
+    }
+
+    public function testRespondeNaoEncontradoParaCaminhoSemRota(): void
+    {
+        $resposta = $this->roteador()->handle(new ServerRequest('GET', '/nao-existe'));
+
+        self::assertSame(404, $resposta->getStatusCode());
+    }
+
+    public function testRespondeMetodoNaoPermitidoParaMetodoSemRota(): void
+    {
+        $resposta = $this->roteador()->handle(new ServerRequest('POST', '/versao'));
+
+        self::assertSame(405, $resposta->getStatusCode());
+    }
+
+    public function testInformaOsMetodosAceitosQuandoOMetodoNaoEPermitido(): void
+    {
+        $resposta = $this->roteador()->handle(new ServerRequest('POST', '/versao'));
+
+        self::assertSame('GET', $resposta->getHeaderLine('Allow'));
+    }
+
+    private function roteador(): Roteador
+    {
+        return new Roteador(new Psr17Factory(), [
+            ['GET', '/versao', $this->handlerQueResponde('resposta da versão')],
+        ]);
     }
 
     private function handlerQueResponde(string $corpo): RequestHandlerInterface
