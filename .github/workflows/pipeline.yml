@@ -1,0 +1,89 @@
+name: pipeline
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: docker compose build php
+      - run: docker compose run --rm -T php composer install --no-interaction --no-progress
+      - run: docker compose run --rm -T php composer sintaxe
+      - run: docker compose run --rm -T php composer estilo
+      - run: docker compose run --rm -T php composer analise
+      - run: docker compose run --rm -T php composer camadas
+      - run: docker compose run --rm -T php composer testes
+      - run: docker compose run --rm -T php composer audit
+
+  publicar:
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        alvo: [php, web]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: ${{ matrix.alvo }}
+          push: true
+          build-args: VERSAO=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          tags: ghcr.io/otaviomc/scripta-manent-${{ matrix.alvo }}:${{ github.sha }}
+
+  promover:
+    needs: publicar
+    runs-on: ubuntu-24.04
+    environment: production
+    concurrency: producao
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          for alvo in php web; do
+            docker buildx imagetools create \
+              -t "ghcr.io/otaviomc/scripta-manent-$alvo:producao" \
+              "ghcr.io/otaviomc/scripta-manent-$alvo:$GITHUB_SHA"
+          done
+
+  conferir:
+    needs: promover
+    runs-on: ubuntu-24.04
+    timeout-minutes: 11
+    steps:
+      - run: |
+          for _ in $(seq 60); do
+            if [ "$(curl -fsS https://scriptamanent.com.br/versao || true)" = "$GITHUB_SHA" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Produção não chegou ao commit $GITHUB_SHA em 10 minutos."
+          exit 1
