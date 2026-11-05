@@ -1,0 +1,24 @@
+name: scriptamanent
+
+services:
+  php:
+    image: ghcr.io/otaviomc/scripta-manent-php:producao
+    restart: unless-stopped
+    mem_limit: 512m
+
+  web:
+    image: ghcr.io/otaviomc/scripta-manent-web:producao
+    restart: unless-stopped
+    environment:
+      NGINX_HTPASSWD: ${NGINX_HTPASSWD:?defina NGINX_HTPASSWD no .env}
+    depends_on: [php]
+    mem_limit: 128m
+
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.7
+    command: tunnel run
+    restart: unless-stopped
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?defina TUNNEL_TOKEN no .env}
+    depends_on: [web]
+    mem_limit: 128m
