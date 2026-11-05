@@ -26,12 +26,6 @@ O nome vem do provérbio latino "verba volant, scripta manent", "as palavras voa
 | CI/CD | GitHub Actions |
 | Hospedagem | VPS na Hetzner, com Cloudflare na frente |
 
-### Sem framework grande
-
-Não usei Laravel nem Symfony. Queria demonstrar domínio da linguagem e seguir o modelo de dados à risca, com chave composta nas tabelas de ligação, coisa que o Eloquent não suporta. As consultas são SQL escrito à mão com PDO.
-
-Pra rotas e HTTP usei componentes prontos, os mesmos que o Slim utiliza. Como eles seguem as PSRs, dá pra simular uma requisição inteira nos testes.
-
 ### Relatório
 
 Os dados vêm de uma view no banco, com uma linha por autor e livro e os assuntos juntos numa coluna só. Livro com dois autores aparece nos dois grupos, mas conta uma vez no total. No fim tem uma seção com os livros em coautoria, agrupados pelos autores.

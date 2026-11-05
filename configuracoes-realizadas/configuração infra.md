@@ -134,5 +134,4 @@
 
 ## Falta
 
-- travar o cloudflared na versão 2026.10.7 no compose de produção
 - rota www redirecionando pro endereço sem www
