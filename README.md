@@ -70,9 +70,42 @@ O GitHub Actions roda lint, PHPStan, Deptrac, testes e `composer audit` em todo 
 
 O ambiente online pede usuário e senha. O administrador tem uma credencial própria no `.env`, guardada como hash, que libera remover vínculos e restaurar os dados de exemplo. Não tem tabela de usuários porque eu não queria mexer no modelo.
 
+O passo a passo do domínio, da VPS, do tunnel e do pipeline está na pasta [configuracoes-realizadas](configuracoes-realizadas).
+
 ## Como configurar localmente
 
+Pré-Requisitos: Instalar Git e Docker.
+
+```bash
+git clone https://github.com/OtavioMC/scripta-manent.git
+cd scripta-manent
+docker compose up -d --build
+docker compose run --rm php composer install
+```
+
+Site em http://localhost:8080.
+
+Verificações
+
+```bash
+docker compose run --rm php composer sintaxe
+docker compose run --rm php composer estilo
+docker compose run --rm php composer analise
+docker compose run --rm php composer camadas
+docker compose run --rm php composer testes
+```
+
 ## Versões
+
+### 0.1.0
+
+Inicia a base do projeto.
+
+- Configura o ambiente de desenvolvimento em Docker
+- Adiciona testes, análise estática e verificação de estilo e de camadas, rodando nos git hooks e no CI
+- Cria a base da aplicação, com roteamento e a rota `/versao`
+- Coloca o site no ar na VPS, com deploy a partir da `main` depois de aprovação manual
+- Protege o site online com usuário e senha
 
 ## Licença
 

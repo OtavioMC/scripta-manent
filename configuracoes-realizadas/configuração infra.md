@@ -11,6 +11,7 @@
 2. No registro.br fui em DNS > Alterar servidores DNS, coloquei os dois que a Cloudflare deu (`carlos.ns.cloudflare.com` e `rayne.ns.cloudflare.com`) e salvei sem clicar em + DNSSEC. Domínio novo fica umas 2 horas em transição.
 3. Com o domínio ativo liguei o DNSSEC na Cloudflare (DNS > Settings > DNSSEC). No registro.br, no mesmo formulário dos servidores DNS, cliquei em + DNSSEC e colei o Key Tag e o Digest do registro DS. O digest copiei pelo botão, porque aparece cortado.
 4. SSL/TLS em Full (Strict). Em SSL/TLS > Edge Certificates liguei Always Use HTTPS.
+5. Em DNS > Records criei um CNAME `www` apontando pra `scriptamanent.com.br`, com proxy ligado. Em Rules > Overview usei o modelo Redirect from WWW to Root: hostname igual a `www.scriptamanent.com.br`, destino dinâmico `concat("https://scriptamanent.com.br", http.request.uri.path)`, 301 e Preserve query string marcado.
 
 ## VPS (Hetzner)
 
@@ -131,7 +132,3 @@
 5. No túnel adicionei a rota (published application) com o domínio scriptamanent.com.br, Service URL `http://web:80`. Conferi se apareceu a página do nginx no site.
 
 6. Desliguei com `docker compose down`. A pasta fica lá por causa do token.
-
-## Falta
-
-- rota www redirecionando pro endereço sem www
