@@ -101,3 +101,11 @@
    ```bash
    docker compose run --rm php composer testes
    ```
+
+7. Acrescentei testes funcionais no `phpunit.xml.dist`
+
+   ```xml
+   <testsuite name="funcional">
+       <directory>tests/Funcional</directory>
+   </testsuite>
+   ```
