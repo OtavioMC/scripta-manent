@@ -29,3 +29,11 @@
    ```bash
    docker compose run --rm php composer analise
    ```
+
+5. Coloquei o cache na pasta do projeto, adicionando no `phpstan.neon.dist`
+
+   ```neon
+   tmpDir: .phpstan.cache
+   ```
+
+   e `/.phpstan.cache/` no `.gitignore`
