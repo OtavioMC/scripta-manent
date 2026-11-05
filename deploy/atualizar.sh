@@ -20,8 +20,12 @@ main() {
   precisa_atualizar || return 0
   local revisao
   revisao=$(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$IMAGEM-php:producao")
-  echo "Atualizando para o commit $revisao"
   git fetch -q origin
+  if ! git cat-file -e "$revisao:compose.prod.yaml" 2>/dev/null; then
+    echo "O commit $revisao não tem compose.prod.yaml. A produção continua no commit atual." >&2
+    return 1
+  fi
+  echo "Atualizando para o commit $revisao"
   git checkout -q "$revisao"
   "${COMPOSE[@]}" up -d --remove-orphans
   docker image prune -f
