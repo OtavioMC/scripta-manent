@@ -1,0 +1,10 @@
+[Unit]
+Description=Atualiza o scriptamanent quando a imagem producao muda
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=deploy
+WorkingDirectory=/home/deploy/scripta-manent
+ExecStart=/usr/bin/bash deploy/atualizar.sh
