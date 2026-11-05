@@ -128,3 +128,82 @@
    ```bash
    docker compose up -d --force-recreate web
    ```
+
+7. Acrescentei no `Dockerfile` os alvos de produção, `php` e `web`
+
+   ```dockerfile
+   FROM composer AS dependencias
+   WORKDIR /app
+   COPY composer.json composer.lock ./
+   RUN composer install --no-dev --no-interaction --no-progress --no-scripts --no-autoloader --prefer-dist
+   COPY src/ src/
+   RUN composer dump-autoload --no-dev --classmap-authoritative --no-interaction
+
+   FROM base AS php
+   ARG VERSAO=dev
+   ENV VERSAO=$VERSAO
+   RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+       && docker-php-ext-enable opcache \
+       && printf '[www]\nenv[VERSAO] = $VERSAO\n' > /usr/local/etc/php-fpm.d/zz-ambiente.conf
+   COPY --from=dependencias /app/vendor/ vendor/
+   COPY config/ config/
+   COPY public/ public/
+   COPY src/ src/
+   USER www-data
+
+   FROM nginx:1.30.6-alpine AS web
+   COPY docker/nginx/comum.conf /etc/nginx/comum.conf
+   COPY docker/nginx/producao.conf /etc/nginx/conf.d/default.conf
+   COPY --chmod=755 docker/nginx/htpasswd.sh /docker-entrypoint.d/40-htpasswd.sh
+   COPY public/ /app/public/
+   ```
+
+   Criei o `docker/nginx/producao.conf`, com senha em tudo menos no `/versao`
+
+   ```nginx
+   map $request_uri $area_protegida {
+       ~^/versao(\?|$) off;
+       default "Scripta Manent";
+   }
+
+   server {
+       include /etc/nginx/comum.conf;
+
+       auth_basic $area_protegida;
+       auth_basic_user_file /etc/nginx/.htpasswd;
+   }
+   ```
+
+   Criei o `docker/nginx/htpasswd.sh`, que grava a senha do `.env` quando o nginx sobe
+
+   ```sh
+   #!/bin/sh
+   set -eu
+
+   if [ -z "${NGINX_HTPASSWD:-}" ]; then
+       echo "NGINX_HTPASSWD está vazio. Gere a senha com htpasswd e coloque no .env antes de subir o site." >&2
+       exit 1
+   fi
+
+   printf '%s\n' "$NGINX_HTPASSWD" > /etc/nginx/.htpasswd
+   chown root:nginx /etc/nginx/.htpasswd
+   chmod 640 /etc/nginx/.htpasswd
+   ```
+
+   E o `.dockerignore`
+
+   ```
+   .git
+   .env
+   vendor
+   .phpunit.cache
+   .phpstan.cache
+   .deptrac.cache
+   ```
+
+   Pra testar as imagens
+
+   ```bash
+   docker build --target php --build-arg VERSAO=abc1234 -t sm-php:teste .
+   docker build --target web -t sm-web:teste .
+   ```

@@ -8,3 +8,28 @@ RUN apk add --no-cache git \
     && git config --system --add safe.directory /app \
     && cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+FROM composer AS dependencias
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-progress --no-scripts --no-autoloader --prefer-dist
+COPY src/ src/
+RUN composer dump-autoload --no-dev --classmap-authoritative --no-interaction
+
+FROM base AS php
+ARG VERSAO=dev
+ENV VERSAO=$VERSAO
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && docker-php-ext-enable opcache \
+    && printf '[www]\nenv[VERSAO] = $VERSAO\n' > /usr/local/etc/php-fpm.d/zz-ambiente.conf
+COPY --from=dependencias /app/vendor/ vendor/
+COPY config/ config/
+COPY public/ public/
+COPY src/ src/
+USER www-data
+
+FROM nginx:1.30.6-alpine AS web
+COPY docker/nginx/comum.conf /etc/nginx/comum.conf
+COPY docker/nginx/producao.conf /etc/nginx/conf.d/default.conf
+COPY --chmod=755 docker/nginx/htpasswd.sh /docker-entrypoint.d/40-htpasswd.sh
+COPY public/ /app/public/
