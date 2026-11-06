@@ -33,4 +33,5 @@ FROM nginx:1.30.6-alpine AS web
 COPY docker/nginx/comum.conf /etc/nginx/comum.conf
 COPY docker/nginx/producao.conf /etc/nginx/conf.d/default.conf
 COPY --chmod=755 docker/nginx/htpasswd.sh /docker-entrypoint.d/40-htpasswd.sh
+COPY --from=dependencias /app/vendor/twbs/bootstrap/dist/ /app/bootstrap/
 COPY public/ /app/public/
