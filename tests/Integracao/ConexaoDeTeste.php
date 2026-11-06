@@ -54,7 +54,7 @@ final class ConexaoDeTeste
         }
     }
 
-    private static function pdo(): PDO
+    public static function pdo(): PDO
     {
         if (self::$pdo === null) {
             $dsn = sprintf(
