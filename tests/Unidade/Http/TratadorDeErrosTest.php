@@ -11,6 +11,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
+use ScriptaManent\Application\BancoIndisponivel;
 use ScriptaManent\Http\RespostaDeErro;
 use ScriptaManent\Http\TratadorDeErros;
 use ScriptaManent\Tests\Duble\LogEmMemoria;
@@ -68,6 +69,27 @@ final class TratadorDeErrosTest extends TestCase
 
         self::assertSame('POST', $this->log->registros[0]['contexto']['metodo'] ?? null);
         self::assertSame('/livros', $this->log->registros[0]['contexto']['caminho'] ?? null);
+    }
+
+    public function testBancoForaDoArRespondeIndisponivelSemDetalheTecnico(): void
+    {
+        $falha = new BancoIndisponivel('SQLSTATE[HY000] [2002] Connection refused');
+
+        $resposta = $this->tratador($this->aplicacaoQueFalha($falha))->handle(new ServerRequest('GET', '/livros'));
+
+        self::assertSame(503, $resposta->getStatusCode());
+        self::assertStringContainsString('Sistema indisponível no momento', (string) $resposta->getBody());
+        self::assertStringNotContainsString('SQLSTATE', (string) $resposta->getBody());
+    }
+
+    public function testBancoForaDoArFicaRegistradoComoCritico(): void
+    {
+        $falha = new BancoIndisponivel('Connection refused');
+
+        $this->tratador($this->aplicacaoQueFalha($falha))->handle(new ServerRequest('GET', '/livros'));
+
+        self::assertSame('critical', $this->log->registros[0]['nivel'] ?? null);
+        self::assertSame($falha, $this->log->registros[0]['contexto']['exception'] ?? null);
     }
 
     private function tratador(RequestHandlerInterface $aplicacao): TratadorDeErros
