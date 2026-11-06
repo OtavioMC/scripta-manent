@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ScriptaManent\Infrastructure\Cache;
 
+use ScriptaManent\Application\Cache\VersoesDasColecoes;
 use ScriptaManent\Application\DadosDeExemplo\RestauradorDeDados;
 
 final readonly class RestauradorDeDadosEmCache implements RestauradorDeDados
@@ -17,6 +18,6 @@ final readonly class RestauradorDeDadosEmCache implements RestauradorDeDados
     public function restaurar(): void
     {
         $this->restaurador->restaurar();
-        $this->cache->invalidar();
+        $this->cache->invalidar(...VersoesDasColecoes::COLECOES);
     }
 }

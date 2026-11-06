@@ -63,7 +63,7 @@ final readonly class RepositorioDeLivrosEmCache implements RepositorioDeLivros
     public function inserir(Livro $livro): Livro
     {
         $inserido = $this->repositorio->inserir($livro);
-        $this->cache->invalidar('livros');
+        $this->cache->invalidar('livros', 'relatorio');
 
         return $inserido;
     }
@@ -71,12 +71,12 @@ final readonly class RepositorioDeLivrosEmCache implements RepositorioDeLivros
     public function alterar(Livro $livro): void
     {
         $this->repositorio->alterar($livro);
-        $this->cache->invalidar('livros');
+        $this->cache->invalidar('livros', 'relatorio');
     }
 
     public function excluir(int $codigo): void
     {
         $this->repositorio->excluir($codigo);
-        $this->cache->invalidar('livros');
+        $this->cache->invalidar('livros', 'relatorio');
     }
 }

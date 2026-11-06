@@ -48,7 +48,9 @@ final readonly class SessaoDeAcesso
             return Situacao::Expirado;
         }
 
-        $this->sessao->guardar(self::CHAVE, ['usuario' => $usuario, 'ultimoUso' => $agora, 'uso' => $contaComoUso]);
+        if ($contaComoUso) {
+            $this->sessao->guardar(self::CHAVE, ['usuario' => $usuario, 'ultimoUso' => $agora]);
+        }
 
         return Situacao::Autenticado;
     }

@@ -23,7 +23,7 @@ final readonly class VersoesController implements RequestHandlerInterface
         $resposta = $this->respostas->createResponse(200)
             ->withHeader('Content-Type', 'application/json; charset=utf-8')
             ->withHeader('Cache-Control', 'no-store');
-        $resposta->getBody()->write((string) count($this->versoes->atuais()));
+        $resposta->getBody()->write(json_encode((object) $this->versoes->atuais(), JSON_THROW_ON_ERROR));
 
         return $resposta;
     }

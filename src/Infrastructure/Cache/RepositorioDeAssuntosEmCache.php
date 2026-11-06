@@ -45,7 +45,7 @@ final readonly class RepositorioDeAssuntosEmCache implements RepositorioDeAssunt
     public function inserir(Assunto $assunto): Assunto
     {
         $inserido = $this->repositorio->inserir($assunto);
-        $this->cache->invalidar('assuntos');
+        $this->cache->invalidar('assuntos', 'livros', 'relatorio');
 
         return $inserido;
     }
@@ -53,12 +53,12 @@ final readonly class RepositorioDeAssuntosEmCache implements RepositorioDeAssunt
     public function alterar(Assunto $assunto): void
     {
         $this->repositorio->alterar($assunto);
-        $this->cache->invalidar('assuntos');
+        $this->cache->invalidar('assuntos', 'livros', 'relatorio');
     }
 
     public function excluir(int $codigo): void
     {
         $this->repositorio->excluir($codigo);
-        $this->cache->invalidar('assuntos');
+        $this->cache->invalidar('assuntos', 'livros', 'relatorio');
     }
 }

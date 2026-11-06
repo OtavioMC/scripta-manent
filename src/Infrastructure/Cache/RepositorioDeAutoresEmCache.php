@@ -42,7 +42,7 @@ final readonly class RepositorioDeAutoresEmCache implements RepositorioDeAutores
     public function inserir(Autor $autor): Autor
     {
         $inserido = $this->repositorio->inserir($autor);
-        $this->cache->invalidar('autores');
+        $this->cache->invalidar('autores', 'livros', 'relatorio');
 
         return $inserido;
     }
@@ -50,12 +50,12 @@ final readonly class RepositorioDeAutoresEmCache implements RepositorioDeAutores
     public function alterar(Autor $autor): void
     {
         $this->repositorio->alterar($autor);
-        $this->cache->invalidar('autores');
+        $this->cache->invalidar('autores', 'livros', 'relatorio');
     }
 
     public function excluir(int $codigo): void
     {
         $this->repositorio->excluir($codigo);
-        $this->cache->invalidar('autores');
+        $this->cache->invalidar('autores', 'livros', 'relatorio');
     }
 }
