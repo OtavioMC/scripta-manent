@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace ScriptaManent\Infrastructure\Banco;
 
 use PDO;
+use PDOException;
 use ScriptaManent\Application\Autor\RepositorioDeAutores;
 use ScriptaManent\Domain\Autor\Autor;
+use ScriptaManent\Domain\ExclusaoBloqueada;
 use UnexpectedValueException;
 
 final readonly class RepositorioDeAutoresPdo implements RepositorioDeAutores
@@ -50,7 +52,31 @@ final readonly class RepositorioDeAutoresPdo implements RepositorioDeAutores
 
     public function excluir(int $codigo): void
     {
-        $this->conexao->pdo()->prepare('DELETE FROM Autor WHERE CodAu = :codigo')->execute(['codigo' => $codigo]);
+        try {
+            $this->conexao->pdo()->prepare('DELETE FROM Autor WHERE CodAu = :codigo')->execute(['codigo' => $codigo]);
+        } catch (PDOException $erro) {
+            if (!ErroDoMysql::violouChaveEstrangeira($erro)) {
+                throw $erro;
+            }
+
+            throw ExclusaoBloqueada::doAutor($this->buscar($codigo)->nome ?? '', $this->titulosDosLivros($codigo));
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function titulosDosLivros(int $codigo): array
+    {
+        $consulta = $this->conexao->pdo()->prepare(
+            'SELECT Livro.Titulo FROM Livro
+             JOIN Livro_Autor ON Livro_Autor.Livro_Codl = Livro.Codl
+             WHERE Livro_Autor.Autor_CodAu = :codigo
+             ORDER BY Livro.Titulo',
+        );
+        $consulta->execute(['codigo' => $codigo]);
+
+        return array_values(array_filter($consulta->fetchAll(PDO::FETCH_COLUMN), is_string(...)));
     }
 
     private function autorDaLinha(mixed $linha): Autor
