@@ -14,11 +14,11 @@ use ScriptaManent\Application\Livro\CadastroDeLivros;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\Livro\Livro;
+use ScriptaManent\Http\Apresentador\FormularioDeLivroApresentador;
 use ScriptaManent\Http\Controller\Livro\ExcluirLivroController;
 use ScriptaManent\Http\Controller\Livro\FormularioDeLivroController;
 use ScriptaManent\Http\Controller\Livro\ListaDeLivrosController;
 use ScriptaManent\Http\Controller\Livro\SalvarLivroController;
-use ScriptaManent\Http\Controller\Livro\TelaDeFormularioDeLivro;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Tests\Duble\RepositorioDeAssuntosEmMemoria;
@@ -35,7 +35,7 @@ final class TelasDeLivrosTest extends TestCase
     private SessaoEmMemoria $sessao;
     private Visao $visao;
     private CadastroDeLivros $cadastro;
-    private TelaDeFormularioDeLivro $formulario;
+    private FormularioDeLivroApresentador $formulario;
 
     protected function setUp(): void
     {
@@ -48,7 +48,7 @@ final class TelasDeLivrosTest extends TestCase
         $this->sessao = new SessaoEmMemoria();
         $this->visao = new Visao($twig, new Psr17Factory());
         $this->cadastro = new CadastroDeLivros($this->livros);
-        $this->formulario = new TelaDeFormularioDeLivro(
+        $this->formulario = new FormularioDeLivroApresentador(
             $this->visao,
             new PaginaDeErro($this->visao),
             new CadastroDeAutores($this->autores),

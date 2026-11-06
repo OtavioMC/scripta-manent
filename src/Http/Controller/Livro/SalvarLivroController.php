@@ -9,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Livro\CadastroDeLivros;
 use ScriptaManent\Domain\ErroDeValidacao;
+use ScriptaManent\Http\Apresentador\FormularioDeLivroApresentador;
 use ScriptaManent\Http\Campos;
 use ScriptaManent\Http\Sessao;
 use ScriptaManent\Http\Visao;
@@ -16,7 +17,7 @@ use ScriptaManent\Http\Visao;
 final readonly class SalvarLivroController implements RequestHandlerInterface
 {
     public function __construct(
-        private TelaDeFormularioDeLivro $tela,
+        private FormularioDeLivroApresentador $tela,
         private CadastroDeLivros $cadastro,
         private Sessao $sessao,
         private Visao $visao,

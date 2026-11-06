@@ -10,11 +10,11 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
 use ScriptaManent\Domain\Autor\Autor;
+use ScriptaManent\Http\Apresentador\FormularioDeAutorApresentador;
 use ScriptaManent\Http\Controller\Autor\ExcluirAutorController;
 use ScriptaManent\Http\Controller\Autor\FormularioDeAutorController;
 use ScriptaManent\Http\Controller\Autor\ListaDeAutoresController;
 use ScriptaManent\Http\Controller\Autor\SalvarAutorController;
-use ScriptaManent\Http\Controller\Autor\TelaDeFormularioDeAutor;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Tests\Duble\RepositorioDeAutoresEmMemoria;
@@ -27,7 +27,7 @@ final class TelasDeAutoresTest extends TestCase
     private SessaoEmMemoria $sessao;
     private Visao $visao;
     private CadastroDeAutores $cadastro;
-    private TelaDeFormularioDeAutor $formulario;
+    private FormularioDeAutorApresentador $formulario;
 
     protected function setUp(): void
     {
@@ -38,7 +38,7 @@ final class TelasDeAutoresTest extends TestCase
         $this->sessao = new SessaoEmMemoria();
         $this->visao = new Visao($twig, new Psr17Factory());
         $this->cadastro = new CadastroDeAutores($this->repositorio);
-        $this->formulario = new TelaDeFormularioDeAutor($this->visao, new PaginaDeErro($this->visao));
+        $this->formulario = new FormularioDeAutorApresentador($this->visao, new PaginaDeErro($this->visao));
     }
 
     public function testListaMostraOsAutoresComLinksDeEdicao(): void

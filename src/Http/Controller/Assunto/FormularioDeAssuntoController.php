@@ -8,12 +8,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
+use ScriptaManent\Http\Apresentador\FormularioDeAssuntoApresentador;
 use ScriptaManent\Http\Campos;
 
 final readonly class FormularioDeAssuntoController implements RequestHandlerInterface
 {
     public function __construct(
-        private TelaDeFormularioDeAssunto $tela,
+        private FormularioDeAssuntoApresentador $tela,
         private CadastroDeAssuntos $cadastro,
     ) {
     }

@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
+use ScriptaManent\Http\Apresentador\FormularioDeAssuntoApresentador;
 use ScriptaManent\Http\Sessao;
 use ScriptaManent\Http\Visao;
 
@@ -17,7 +18,7 @@ final readonly class ListaDeAssuntosController implements RequestHandlerInterfac
         private Visao $visao,
         private CadastroDeAssuntos $cadastro,
         private Sessao $sessao,
-        private TelaDeFormularioDeAssunto $formulario,
+        private FormularioDeAssuntoApresentador $formulario,
     ) {
     }
 

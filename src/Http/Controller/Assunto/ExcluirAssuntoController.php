@@ -9,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Domain\ExclusaoBloqueada;
+use ScriptaManent\Http\Apresentador\FormularioDeAssuntoApresentador;
 use ScriptaManent\Http\Campos;
 use ScriptaManent\Http\Sessao;
 use ScriptaManent\Http\Visao;
@@ -16,7 +17,7 @@ use ScriptaManent\Http\Visao;
 final readonly class ExcluirAssuntoController implements RequestHandlerInterface
 {
     public function __construct(
-        private TelaDeFormularioDeAssunto $tela,
+        private FormularioDeAssuntoApresentador $tela,
         private CadastroDeAssuntos $cadastro,
         private Sessao $sessao,
         private Visao $visao,

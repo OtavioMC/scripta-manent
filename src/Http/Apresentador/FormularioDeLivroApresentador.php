@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ScriptaManent\Http\Controller\Livro;
+namespace ScriptaManent\Http\Apresentador;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,7 +17,7 @@ use ScriptaManent\Http\Campos;
 use ScriptaManent\Http\RespostaDeErro;
 use ScriptaManent\Http\Visao;
 
-final readonly class TelaDeFormularioDeLivro
+final readonly class FormularioDeLivroApresentador
 {
     private const array CAMPOS_VAZIOS = ['titulo' => '', 'editora' => '', 'edicao' => '', 'ano' => '', 'valor' => ''];
 

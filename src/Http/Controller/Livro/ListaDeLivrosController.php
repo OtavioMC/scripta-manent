@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Livro\CadastroDeLivros;
+use ScriptaManent\Http\Apresentador\FormularioDeLivroApresentador;
 use ScriptaManent\Http\Sessao;
 use ScriptaManent\Http\Visao;
 
@@ -17,7 +18,7 @@ final readonly class ListaDeLivrosController implements RequestHandlerInterface
         private Visao $visao,
         private CadastroDeLivros $cadastro,
         private Sessao $sessao,
-        private TelaDeFormularioDeLivro $formulario,
+        private FormularioDeLivroApresentador $formulario,
     ) {
     }
 

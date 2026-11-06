@@ -10,11 +10,11 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Domain\Assunto\Assunto;
+use ScriptaManent\Http\Apresentador\FormularioDeAssuntoApresentador;
 use ScriptaManent\Http\Controller\Assunto\ExcluirAssuntoController;
 use ScriptaManent\Http\Controller\Assunto\FormularioDeAssuntoController;
 use ScriptaManent\Http\Controller\Assunto\ListaDeAssuntosController;
 use ScriptaManent\Http\Controller\Assunto\SalvarAssuntoController;
-use ScriptaManent\Http\Controller\Assunto\TelaDeFormularioDeAssunto;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Tests\Duble\RepositorioDeAssuntosEmMemoria;
@@ -27,7 +27,7 @@ final class TelasDeAssuntosTest extends TestCase
     private SessaoEmMemoria $sessao;
     private Visao $visao;
     private CadastroDeAssuntos $cadastro;
-    private TelaDeFormularioDeAssunto $formulario;
+    private FormularioDeAssuntoApresentador $formulario;
 
     protected function setUp(): void
     {
@@ -38,7 +38,7 @@ final class TelasDeAssuntosTest extends TestCase
         $this->sessao = new SessaoEmMemoria();
         $this->visao = new Visao($twig, new Psr17Factory());
         $this->cadastro = new CadastroDeAssuntos($this->repositorio);
-        $this->formulario = new TelaDeFormularioDeAssunto($this->visao, new PaginaDeErro($this->visao));
+        $this->formulario = new FormularioDeAssuntoApresentador($this->visao, new PaginaDeErro($this->visao));
     }
 
     public function testListaMostraOsAssuntosComLinksDeEdicao(): void

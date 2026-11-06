@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace ScriptaManent\Http\Controller\Assunto;
+namespace ScriptaManent\Http\Apresentador;
 
 use Psr\Http\Message\ResponseInterface;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Http\RespostaDeErro;
 use ScriptaManent\Http\Visao;
 
-final readonly class TelaDeFormularioDeAssunto
+final readonly class FormularioDeAssuntoApresentador
 {
     public function __construct(
         private Visao $visao,
