@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScriptaManent\Tests\Duble;
 
 use ScriptaManent\Application\Assunto\RepositorioDeAssuntos;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 
@@ -26,12 +27,16 @@ final class RepositorioDeAssuntosEmMemoria implements RepositorioDeAssuntos
         $this->livros[$codigo] = $titulos;
     }
 
-    public function listar(): array
+    public function listar(?Busca $busca = null): array
     {
         $assuntos = array_values($this->assuntos);
         usort($assuntos, static fn (Assunto $a, Assunto $b): int => strcmp($a->descricao, $b->descricao));
 
-        return $assuntos;
+        return array_values(array_filter(
+            $assuntos,
+            static fn (Assunto $assunto): bool => $busca === null || $busca->vazia()
+                || mb_stripos($assunto->descricao, $busca->texto) !== false,
+        ));
     }
 
     public function buscar(int $codigo): ?Assunto

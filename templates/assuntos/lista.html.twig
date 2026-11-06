@@ -2,6 +2,8 @@
 
 {% block menu_ativo %}/assuntos{% endblock %}
 
+{% import 'macros/busca.html.twig' as busca_ %}
+
 {% block titulo %}Assuntos{% endblock %}
 
 {% block conteudo %}
@@ -14,11 +16,15 @@
            data-titulo="Cadastrar assunto">Cadastrar assunto</a>
     </div>
 
+    {{ busca_.campo('/assuntos', busca, 'Buscar assuntos', 'Buscar pela descrição do assunto', assuntos|length, 'assunto encontrado', 'assuntos encontrados') }}
+
     {% if aviso %}
         <div class="alert alert-success" role="status">{{ aviso }}</div>
     {% endif %}
 
-    {% if assuntos is empty %}
+    {% if assuntos is empty and busca %}
+        {{ busca_.nadaEncontrado(busca, '/assuntos', 'Confira a grafia ou busque por parte da descrição.') }}
+    {% elseif assuntos is empty %}
         <div class="estado-vazio text-center">
             <p class="fw-semibold mb-1">Nenhum assunto cadastrado.</p>
             <p class="texto-suave mb-3">Cadastre o primeiro assunto para poder vinculá-lo aos livros.</p>
@@ -91,6 +97,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Fechar</button>
+                        <a class="btn btn-destaque" href="/livros?busca={{ bloqueio.busca|url_encode }}">Mostrar títulos</a>
                     </div>
                 </div>
             </div>

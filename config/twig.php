@@ -51,5 +51,7 @@ return (static function (): Environment {
         ],
     ]);
 
+    $twig->addGlobal('buscaMaxima', ScriptaManent\Application\Busca::MAXIMO);
+
     return $twig;
 })();

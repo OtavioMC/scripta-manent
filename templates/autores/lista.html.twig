@@ -2,6 +2,8 @@
 
 {% block menu_ativo %}/autores{% endblock %}
 
+{% import 'macros/busca.html.twig' as busca_ %}
+
 {% block titulo %}Autores{% endblock %}
 
 {% block conteudo %}
@@ -14,11 +16,15 @@
            data-titulo="Cadastrar autor">Cadastrar autor</a>
     </div>
 
+    {{ busca_.campo('/autores', busca, 'Buscar autores', 'Buscar pelo nome do autor', autores|length, 'autor encontrado', 'autores encontrados') }}
+
     {% if aviso %}
         <div class="alert alert-success" role="status">{{ aviso }}</div>
     {% endif %}
 
-    {% if autores is empty %}
+    {% if autores is empty and busca %}
+        {{ busca_.nadaEncontrado(busca, '/autores', 'Confira a grafia ou busque só pelo sobrenome.') }}
+    {% elseif autores is empty %}
         <div class="estado-vazio text-center">
             <p class="fw-semibold mb-1">Nenhum autor cadastrado.</p>
             <p class="texto-suave mb-3">Cadastre o primeiro autor para poder vinculá-lo aos livros.</p>
@@ -90,6 +96,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Fechar</button>
+                        <a class="btn btn-destaque" href="/livros?busca={{ bloqueio.busca|url_encode }}">Mostrar títulos</a>
                     </div>
                 </div>
             </div>

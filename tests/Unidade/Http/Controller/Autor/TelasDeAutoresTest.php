@@ -89,6 +89,33 @@ final class TelasDeAutoresTest extends TestCase
         self::assertStringNotContainsString('Autor Clarice Lispector cadastrado.', (string) $this->lista()->getBody());
     }
 
+    public function testBuscaFiltraAListaEMostraQuantosForamEncontrados(): void
+    {
+        $this->repositorio->inserir(Autor::novo('Clarice Lispector'));
+        $this->repositorio->inserir(Autor::novo('Machado de Assis'));
+
+        $lista = new ListaDeAutoresController($this->visao, $this->cadastro, $this->sessao, $this->formulario);
+        $requisicao = (new ServerRequest('GET', '/autores'))->withQueryParams(['busca' => 'machado']);
+        $pagina = (string) $lista->handle($requisicao)->getBody();
+
+        self::assertStringContainsString('Machado de Assis', $pagina);
+        self::assertStringNotContainsString('Clarice Lispector', $pagina);
+        self::assertStringContainsString('1 autor encontrado para “machado”.', $pagina);
+    }
+
+    public function testModalDeBloqueioLevaParaOsLivrosDoAutor(): void
+    {
+        $autor = $this->repositorio->inserir(Autor::novo('Machado de Assis'));
+        $this->repositorio->vincularLivros((int) $autor->codigo, ['Dom Casmurro']);
+
+        $this->excluir((int) $autor->codigo);
+
+        self::assertStringContainsString(
+            'href="/livros?busca=Machado%20de%20Assis"',
+            (string) $this->lista()->getBody(),
+        );
+    }
+
     public function testFormularioUsaOLimiteDoDominioNoCampoNome(): void
     {
         $pagina = (string) $this->abrirFormulario()->getBody();

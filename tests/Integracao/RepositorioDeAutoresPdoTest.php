@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScriptaManent\Tests\Integracao;
 
 use PHPUnit\Framework\TestCase;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use ScriptaManent\Infrastructure\Banco\Conexao;
@@ -53,6 +54,23 @@ final class RepositorioDeAutoresPdoTest extends TestCase
         $nomes = array_map(static fn (Autor $autor): string => $autor->nome, $this->repositorio->listar());
 
         self::assertLessThan(array_search('Zélia Gattai', $nomes, true), array_search('Adélia Prado', $nomes, true));
+    }
+
+    public function testBuscaPeloNomeSemDiferenciarAcentoNemMaiuscula(): void
+    {
+        $this->repositorio->inserir(Autor::novo('Otília Brandão'));
+
+        $nomes = array_map(
+            static fn (Autor $autor): string => $autor->nome,
+            $this->repositorio->listar(Busca::deTexto('otilia brandao')),
+        );
+
+        self::assertSame(['Otília Brandão'], $nomes);
+    }
+
+    public function testCuringaDigitadoNaBuscaNaoTrazTodosOsAutores(): void
+    {
+        self::assertSame([], $this->repositorio->listar(Busca::deTexto('%')));
     }
 
     public function testAlteraONomeDoAutor(): void

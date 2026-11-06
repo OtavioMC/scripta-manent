@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScriptaManent\Tests\Integracao;
 
 use PHPUnit\Framework\TestCase;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\ErroDeValidacao;
 use ScriptaManent\Domain\Livro\Livro;
 use ScriptaManent\Infrastructure\Banco\Conexao;
@@ -123,6 +124,27 @@ final class RepositorioDeLivrosPdoTest extends TestCase
         self::assertCount(2, $livros[0]->codigosDosAutores);
         self::assertCount(2, $livros[0]->codigosDosAssuntos);
         self::assertSame('R$ 1.234,56', $livros[0]->valor->formatado());
+    }
+
+    public function testBuscaEncontraOLivroPeloNomeDoAssunto(): void
+    {
+        $this->repositorio->inserir(Livro::criar(
+            null,
+            'Manual do Pequeno Jardim',
+            'Horizonte',
+            '1',
+            '2021',
+            '50,00',
+            [],
+            [$this->assunto('Jardinagem Urbana')],
+        ));
+
+        $titulos = array_map(
+            static fn ($livro): string => $livro->titulo,
+            $this->repositorio->listar(Busca::deTexto('jardinagem urbana')),
+        );
+
+        self::assertSame(['Manual do Pequeno Jardim'], $titulos);
     }
 
     public function testVinculoComAutorQueNaoExisteViraErroDeValidacao(): void

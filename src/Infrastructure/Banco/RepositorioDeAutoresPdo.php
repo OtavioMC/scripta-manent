@@ -7,6 +7,7 @@ namespace ScriptaManent\Infrastructure\Banco;
 use PDO;
 use PDOException;
 use ScriptaManent\Application\Autor\RepositorioDeAutores;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use UnexpectedValueException;
@@ -17,13 +18,18 @@ final readonly class RepositorioDeAutoresPdo implements RepositorioDeAutores
     {
     }
 
-    public function listar(): array
+    public function listar(?Busca $busca = null): array
     {
-        $consulta = $this->conexao->pdo()->query('SELECT CodAu, Nome FROM Autor ORDER BY Nome, CodAu');
+        $sql = 'SELECT CodAu, Nome FROM Autor';
+        $parametros = [];
+        if ($busca !== null && !$busca->vazia()) {
+            $sql .= ' WHERE Nome LIKE :nome';
+            $parametros['nome'] = Like::contendo($busca->texto);
+        }
+        $consulta = $this->conexao->pdo()->prepare($sql . ' ORDER BY Nome, CodAu');
+        $consulta->execute($parametros);
 
-        $linhas = $consulta === false ? [] : $consulta->fetchAll(PDO::FETCH_ASSOC);
-
-        return array_values(array_map($this->autorDaLinha(...), $linhas));
+        return array_values(array_map($this->autorDaLinha(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
     }
 
     public function buscar(int $codigo): ?Autor

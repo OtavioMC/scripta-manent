@@ -12,6 +12,9 @@
             <p class="marca mb-1">Scripta Manent</p>
             <h1 class="titulo-secao mb-1">Relatório de livros por autor</h1>
             <p class="texto-suave mb-0">Gerado em {{ geradoEm }}, horário de Brasília.</p>
+            {% if busca %}
+                <p class="texto-suave mb-0">Somente os livros encontrados pela busca “{{ busca }}”.</p>
+            {% endif %}
         </header>
 
         {% include 'relatorio/_conteudo.html.twig' %}

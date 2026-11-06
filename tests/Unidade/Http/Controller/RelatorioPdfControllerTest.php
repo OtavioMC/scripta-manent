@@ -9,6 +9,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Application\Relatorio\FonteDoRelatorio;
 use ScriptaManent\Application\Relatorio\GeradorDePdf;
 use ScriptaManent\Application\Relatorio\PdfIndisponivel;
@@ -60,7 +61,7 @@ final class RelatorioPdfControllerTest extends TestCase
     {
         $twig = TwigDeTeste::criar();
         $fonte = new class implements FonteDoRelatorio {
-            public function linhas(): array
+            public function linhas(?Busca $busca = null): array
             {
                 return [];
             }

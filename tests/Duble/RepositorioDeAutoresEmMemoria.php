@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScriptaManent\Tests\Duble;
 
 use ScriptaManent\Application\Autor\RepositorioDeAutores;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 
@@ -26,12 +27,16 @@ final class RepositorioDeAutoresEmMemoria implements RepositorioDeAutores
         $this->livros[$codigo] = $titulos;
     }
 
-    public function listar(): array
+    public function listar(?Busca $busca = null): array
     {
         $autores = array_values($this->autores);
         usort($autores, static fn (Autor $a, Autor $b): int => strcmp($a->nome, $b->nome));
 
-        return $autores;
+        return array_values(array_filter(
+            $autores,
+            static fn (Autor $autor): bool => $busca === null || $busca->vazia()
+                || mb_stripos($autor->nome, $busca->texto) !== false,
+        ));
     }
 
     public function buscar(int $codigo): ?Autor

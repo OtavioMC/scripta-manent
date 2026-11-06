@@ -39,6 +39,7 @@ final readonly class ExcluirAssuntoController implements RequestHandlerInterface
             $this->sessao->guardar('bloqueio', [
                 'mensagem' => $bloqueio->getMessage(),
                 'titulos' => $bloqueio->titulos,
+                'busca' => $assunto->descricao,
             ]);
         }
 

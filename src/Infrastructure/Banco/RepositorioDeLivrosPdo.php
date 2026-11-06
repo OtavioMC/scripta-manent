@@ -6,6 +6,7 @@ namespace ScriptaManent\Infrastructure\Banco;
 
 use PDO;
 use PDOException;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Application\Livro\LivroNaLista;
 use ScriptaManent\Application\Livro\RepositorioDeLivros;
 use ScriptaManent\Domain\ErroDeValidacao;
@@ -21,9 +22,27 @@ final readonly class RepositorioDeLivrosPdo implements RepositorioDeLivros
     {
     }
 
-    public function listar(): array
+    public function listar(?Busca $busca = null): array
     {
-        $consulta = $this->conexao->pdo()->query(
+        $filtro = '';
+        $parametros = [];
+        if ($busca !== null && !$busca->vazia()) {
+            $filtro = " WHERE Livro.Titulo LIKE :titulo OR Livro.Editora LIKE :editora
+                OR Livro.AnoPublicacao LIKE :ano
+                OR EXISTS (SELECT 1 FROM Livro_Autor JOIN Autor ON Autor.CodAu = Livro_Autor.Autor_CodAu
+                    WHERE Livro_Autor.Livro_Codl = Livro.Codl AND Autor.Nome LIKE :autor)
+                OR EXISTS (SELECT 1 FROM Livro_Assunto JOIN Assunto ON Assunto.codAs = Livro_Assunto.Assunto_codAs
+                    WHERE Livro_Assunto.Livro_Codl = Livro.Codl AND Assunto.Descricao LIKE :assunto)";
+            $termo = Like::contendo($busca->texto);
+            $parametros = [
+                'titulo' => $termo,
+                'editora' => $termo,
+                'ano' => $termo,
+                'autor' => $termo,
+                'assunto' => $termo,
+            ];
+        }
+        $consulta = $this->conexao->pdo()->prepare(
             "SELECT Livro.Codl, Livro.Titulo, Livro.Editora, Livro.Edicao, Livro.AnoPublicacao, Livro.Valor,
                 (SELECT GROUP_CONCAT(Autor.Nome ORDER BY Autor.Nome SEPARATOR '\\n')
                  FROM Livro_Autor JOIN Autor ON Autor.CodAu = Livro_Autor.Autor_CodAu
@@ -35,12 +54,12 @@ final readonly class RepositorioDeLivrosPdo implements RepositorioDeLivros
                 (SELECT GROUP_CONCAT(Assunto.Descricao ORDER BY Assunto.Descricao SEPARATOR '\\n')
                  FROM Livro_Assunto JOIN Assunto ON Assunto.codAs = Livro_Assunto.Assunto_codAs
                  WHERE Livro_Assunto.Livro_Codl = Livro.Codl) AS Assuntos
-             FROM Livro
+             FROM Livro" . $filtro . "
              ORDER BY Livro.Titulo, Livro.Codl",
         );
-        $linhas = $consulta === false ? [] : $consulta->fetchAll(PDO::FETCH_ASSOC);
+        $consulta->execute($parametros);
 
-        return array_values(array_map($this->livroNaLista(...), $linhas));
+        return array_values(array_map($this->livroNaLista(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
     }
 
     public function buscar(int $codigo): ?Livro

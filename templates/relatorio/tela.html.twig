@@ -2,6 +2,8 @@
 
 {% block menu_ativo %}/relatorio{% endblock %}
 
+{% import 'macros/busca.html.twig' as busca_ %}
+
 {% block titulo %}Relatório{% endblock %}
 
 {% block conteudo %}
@@ -11,7 +13,7 @@
             <p class="texto-suave mb-0">Gerado em {{ geradoEm }}, horário de Brasília.</p>
         </div>
         {% if pdfLigado %}
-            <a class="btn btn-destaque" href="/relatorio/pdf">Baixar PDF</a>
+            <a class="btn btn-destaque" href="/relatorio/pdf{{ busca ? '?busca=' ~ busca|url_encode }}">Baixar PDF</a>
         {% else %}
             <div class="text-sm-end">
                 <button class="btn btn-destaque" type="button" disabled aria-describedby="pdf-desligado">Baixar PDF</button>
@@ -19,6 +21,9 @@
             </div>
         {% endif %}
     </div>
+
+    {{ busca_.campo('/relatorio', busca, 'Buscar no relatório', 'Buscar por título, autor, assunto ou editora',
+        relatorio.totalDeLivros, 'livro encontrado', 'livros encontrados') }}
 
     {% if aviso %}
         <div class="alert alert-warning" role="status">{{ aviso }}</div>

@@ -1,6 +1,11 @@
 {% import 'macros/relatorio.html.twig' as macros %}
 
-{% if relatorio.totalDeLivros == 0 %}
+{% if relatorio.totalDeLivros == 0 and busca %}
+    <div class="estado-vazio text-center">
+        <p class="fw-semibold mb-1">Nenhum livro encontrado para “{{ busca }}”.</p>
+        <p class="texto-suave mb-0">A busca procura no título, na editora e nos nomes de autores e assuntos.</p>
+    </div>
+{% elseif relatorio.totalDeLivros == 0 %}
     <div class="estado-vazio text-center">
         <p class="fw-semibold mb-1">Nenhum livro cadastrado.</p>
         <p class="texto-suave mb-0">Cadastre livros para que eles apareçam no relatório, agrupados por autor.</p>

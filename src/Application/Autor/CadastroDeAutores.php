@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ScriptaManent\Application\Autor;
 
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ErroDeValidacao;
 use ScriptaManent\Domain\ExclusaoBloqueada;
@@ -17,9 +18,9 @@ final readonly class CadastroDeAutores
     /**
      * @return list<Autor>
      */
-    public function listar(): array
+    public function listar(?Busca $busca = null): array
     {
-        return $this->repositorio->listar();
+        return $this->repositorio->listar($busca);
     }
 
     public function buscar(int $codigo): ?Autor

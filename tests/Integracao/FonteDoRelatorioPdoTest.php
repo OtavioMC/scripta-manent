@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScriptaManent\Tests\Integracao;
 
 use PHPUnit\Framework\TestCase;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\Relatorio\LinhaDoRelatorio;
 use ScriptaManent\Infrastructure\Banco\Conexao;
 use ScriptaManent\Infrastructure\Banco\FonteDoRelatorioPdo;
@@ -45,6 +46,25 @@ final class FonteDoRelatorioPdoTest extends TestCase
 
         self::assertNull($linha->codigoDoAutor);
         self::assertNull($linha->autor);
+    }
+
+    public function testBuscaPorUmAutorTrazOLivroComTodosOsCoautores(): void
+    {
+        $livro = $this->livro('Manual do Pequeno Jardim', '50.00');
+        foreach (['Otília Brandão', 'Jorge Vasques'] as $nome) {
+            $autor = ConexaoDeTeste::inserir('INSERT INTO Autor (Nome) VALUES (:nome)', ['nome' => $nome]);
+            ConexaoDeTeste::inserir(
+                'INSERT INTO Livro_Autor (Livro_Codl, Autor_CodAu) VALUES (:livro, :autor)',
+                ['livro' => $livro, 'autor' => $autor],
+            );
+        }
+
+        $autores = array_map(
+            static fn (LinhaDoRelatorio $linha): ?string => $linha->autor,
+            (new FonteDoRelatorioPdo(new Conexao(ConexaoDeTeste::pdo(...))))->linhas(Busca::deTexto('Otília')),
+        );
+
+        self::assertSame(['Jorge Vasques', 'Otília Brandão'], $autores);
     }
 
     private function linhaDoLivro(int $livro): LinhaDoRelatorio

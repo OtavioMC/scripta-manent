@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScriptaManent\Http;
 
 use Psr\Http\Message\ServerRequestInterface;
+use ScriptaManent\Application\Busca;
 
 final class Campos
 {
@@ -29,6 +30,13 @@ final class Campos
         $validos = array_filter($valores, static fn (mixed $valor): bool => is_string($valor) && ctype_digit($valor));
 
         return array_values(array_map(intval(...), $validos));
+    }
+
+    public static function busca(ServerRequestInterface $request): Busca
+    {
+        $valor = $request->getQueryParams()['busca'] ?? '';
+
+        return Busca::deTexto(is_string($valor) ? $valor : '');
     }
 
     public static function texto(ServerRequestInterface $request, string $nome): string

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ScriptaManent\Application\Livro;
 
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\ErroDeValidacao;
 use ScriptaManent\Domain\Livro\Livro;
 
@@ -16,9 +17,9 @@ final readonly class CadastroDeLivros
     /**
      * @return list<LivroNaLista>
      */
-    public function listar(): array
+    public function listar(?Busca $busca = null): array
     {
-        return $this->repositorio->listar();
+        return $this->repositorio->listar($busca);
     }
 
     public function buscar(int $codigo): ?Livro

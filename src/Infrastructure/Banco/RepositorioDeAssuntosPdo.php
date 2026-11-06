@@ -7,6 +7,7 @@ namespace ScriptaManent\Infrastructure\Banco;
 use PDO;
 use PDOException;
 use ScriptaManent\Application\Assunto\RepositorioDeAssuntos;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use UnexpectedValueException;
@@ -17,12 +18,18 @@ final readonly class RepositorioDeAssuntosPdo implements RepositorioDeAssuntos
     {
     }
 
-    public function listar(): array
+    public function listar(?Busca $busca = null): array
     {
-        $consulta = $this->conexao->pdo()->query('SELECT codAs, Descricao FROM Assunto ORDER BY Descricao, codAs');
-        $linhas = $consulta === false ? [] : $consulta->fetchAll(PDO::FETCH_ASSOC);
+        $sql = 'SELECT codAs, Descricao FROM Assunto';
+        $parametros = [];
+        if ($busca !== null && !$busca->vazia()) {
+            $sql .= ' WHERE Descricao LIKE :descricao';
+            $parametros['descricao'] = Like::contendo($busca->texto);
+        }
+        $consulta = $this->conexao->pdo()->prepare($sql . ' ORDER BY Descricao, codAs');
+        $consulta->execute($parametros);
 
-        return array_values(array_map($this->assuntoDaLinha(...), $linhas));
+        return array_values(array_map($this->assuntoDaLinha(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
     }
 
     public function buscar(int $codigo): ?Assunto

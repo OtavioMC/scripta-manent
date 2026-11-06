@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ScriptaManent\Infrastructure\Banco;
 
 use PDO;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Application\Relatorio\FonteDoRelatorio;
 use ScriptaManent\Domain\Livro\Dinheiro;
 use ScriptaManent\Domain\Relatorio\LinhaDoRelatorio;
@@ -16,16 +17,24 @@ final readonly class FonteDoRelatorioPdo implements FonteDoRelatorio
     {
     }
 
-    public function linhas(): array
+    public function linhas(?Busca $busca = null): array
     {
-        $consulta = $this->conexao->pdo()->query(
+        $filtro = '';
+        $parametros = [];
+        if ($busca !== null && !$busca->vazia()) {
+            $filtro = ' WHERE Codl IN (SELECT Codl FROM vw_livros_por_autor
+                WHERE Titulo LIKE :titulo OR Autor LIKE :autor OR Editora LIKE :editora OR Assuntos LIKE :assuntos)';
+            $termo = Like::contendo($busca->texto);
+            $parametros = ['titulo' => $termo, 'autor' => $termo, 'editora' => $termo, 'assuntos' => $termo];
+        }
+        $consulta = $this->conexao->pdo()->prepare(
             'SELECT CodAu, Autor, Codl, Titulo, Editora, Edicao, AnoPublicacao, Valor, Assuntos
-             FROM vw_livros_por_autor
+             FROM vw_livros_por_autor' . $filtro . '
              ORDER BY Autor IS NULL, Autor, Titulo, Codl',
         );
-        $linhas = $consulta === false ? [] : $consulta->fetchAll(PDO::FETCH_ASSOC);
+        $consulta->execute($parametros);
 
-        return array_values(array_map($this->linhaDoRelatorio(...), $linhas));
+        return array_values(array_map($this->linhaDoRelatorio(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
     }
 
     private function linhaDoRelatorio(mixed $linha): LinhaDoRelatorio

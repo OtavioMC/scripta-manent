@@ -39,6 +39,7 @@ final readonly class ExcluirAutorController implements RequestHandlerInterface
             $this->sessao->guardar('bloqueio', [
                 'mensagem' => $bloqueio->getMessage(),
                 'titulos' => $bloqueio->titulos,
+                'busca' => $autor->nome,
             ]);
         }
 

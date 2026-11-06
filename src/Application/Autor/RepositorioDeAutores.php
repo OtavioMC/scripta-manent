@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ScriptaManent\Application\Autor;
 
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 
@@ -12,7 +13,7 @@ interface RepositorioDeAutores
     /**
      * @return list<Autor>
      */
-    public function listar(): array;
+    public function listar(?Busca $busca = null): array;
 
     public function buscar(int $codigo): ?Autor;
 

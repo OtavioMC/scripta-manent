@@ -8,6 +8,7 @@ use DateTimeZone;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Application\Relatorio\FonteDoRelatorio;
 use ScriptaManent\Domain\Livro\Dinheiro;
 use ScriptaManent\Domain\Relatorio\LinhaDoRelatorio;
@@ -52,7 +53,7 @@ final class RelatorioControllerTest extends TestCase
             {
             }
 
-            public function linhas(): array
+            public function linhas(?Busca $busca = null): array
             {
                 return $this->linhas;
             }

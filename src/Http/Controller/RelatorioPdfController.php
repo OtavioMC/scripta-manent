@@ -15,6 +15,7 @@ use ScriptaManent\Application\Relatorio\FonteDoRelatorio;
 use ScriptaManent\Application\Relatorio\GeradorDePdf;
 use ScriptaManent\Application\Relatorio\PdfIndisponivel;
 use ScriptaManent\Domain\Relatorio\Relatorio;
+use ScriptaManent\Http\Campos;
 use ScriptaManent\Http\Sessao;
 use ScriptaManent\Http\Visao;
 
@@ -38,8 +39,10 @@ final readonly class RelatorioPdfController implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $agora = new DateTimeImmutable('now', $this->fusoDeExibicao);
+        $busca = Campos::busca($request);
         $html = $this->visao->renderizar('relatorio/pdf.html.twig', [
-            'relatorio' => Relatorio::montar($this->fonte->linhas()),
+            'relatorio' => Relatorio::montar($this->fonte->linhas($busca)),
+            'busca' => $busca->texto,
             'geradoEm' => sprintf('%s, %sh%s', $agora->format('d/m/Y'), $agora->format('G'), $agora->format('i')),
         ]);
 
@@ -53,7 +56,9 @@ final readonly class RelatorioPdfController implements RequestHandlerInterface
                 . 'tente baixar o PDF de novo em alguns minutos.',
             );
 
-            return $this->visao->redirecionar('/relatorio');
+            return $this->visao->redirecionar(
+                $busca->vazia() ? '/relatorio' : '/relatorio?' . http_build_query(['busca' => $busca->texto]),
+            );
         }
 
         $resposta = $this->respostas->createResponse(200)

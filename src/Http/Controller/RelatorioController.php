@@ -12,6 +12,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Relatorio\FonteDoRelatorio;
 use ScriptaManent\Application\Relatorio\GeradorDePdf;
 use ScriptaManent\Domain\Relatorio\Relatorio;
+use ScriptaManent\Http\Campos;
 use ScriptaManent\Http\Sessao;
 use ScriptaManent\Http\Visao;
 
@@ -29,10 +30,12 @@ final readonly class RelatorioController implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $agora = new DateTimeImmutable('now', $this->fusoDeExibicao);
+        $busca = Campos::busca($request);
         $aviso = $this->sessao->retirar('aviso');
 
         return $this->visao->responder('relatorio/tela.html.twig', [
-            'relatorio' => Relatorio::montar($this->fonte->linhas()),
+            'relatorio' => Relatorio::montar($this->fonte->linhas($busca)),
+            'busca' => $busca->texto,
             'geradoEm' => sprintf('%s, %sh%s', $agora->format('d/m/Y'), $agora->format('G'), $agora->format('i')),
             'pdfLigado' => $this->gerador->ligado(),
             'aviso' => is_string($aviso) ? $aviso : null,
