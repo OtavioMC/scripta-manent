@@ -28,6 +28,18 @@ final class ExclusaoBloqueada extends DomainException
         ), $titulos);
     }
 
+    /**
+     * @param list<string> $titulos
+     */
+    public static function doAssunto(string $descricao, array $titulos): self
+    {
+        return new self(sprintf(
+            'O assunto %s está vinculado a %s. Remova os vínculos antes de excluir.',
+            $descricao,
+            self::quantidadeDeLivros(count($titulos)),
+        ), $titulos);
+    }
+
     private static function quantidadeDeLivros(int $quantidade): string
     {
         return $quantidade === 1 ? '1 livro' : sprintf('%d livros', $quantidade);

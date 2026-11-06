@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace ScriptaManent\Infrastructure\Banco;
 
 use PDO;
+use PDOException;
 use ScriptaManent\Application\Assunto\RepositorioDeAssuntos;
 use ScriptaManent\Domain\Assunto\Assunto;
+use ScriptaManent\Domain\ExclusaoBloqueada;
 use UnexpectedValueException;
 
 final readonly class RepositorioDeAssuntosPdo implements RepositorioDeAssuntos
@@ -50,7 +52,34 @@ final readonly class RepositorioDeAssuntosPdo implements RepositorioDeAssuntos
 
     public function excluir(int $codigo): void
     {
-        $this->conexao->pdo()->prepare('DELETE FROM Assunto WHERE codAs = :codigo')->execute(['codigo' => $codigo]);
+        try {
+            $this->conexao->pdo()->prepare('DELETE FROM Assunto WHERE codAs = :codigo')->execute(['codigo' => $codigo]);
+        } catch (PDOException $erro) {
+            if (!ErroDoMysql::violouChaveEstrangeira($erro)) {
+                throw $erro;
+            }
+
+            throw ExclusaoBloqueada::doAssunto(
+                $this->buscar($codigo)->descricao ?? '',
+                $this->titulosDosLivros($codigo),
+            );
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function titulosDosLivros(int $codigo): array
+    {
+        $consulta = $this->conexao->pdo()->prepare(
+            'SELECT Livro.Titulo FROM Livro
+             JOIN Livro_Assunto ON Livro_Assunto.Livro_Codl = Livro.Codl
+             WHERE Livro_Assunto.Assunto_codAs = :codigo
+             ORDER BY Livro.Titulo',
+        );
+        $consulta->execute(['codigo' => $codigo]);
+
+        return array_values(array_filter($consulta->fetchAll(PDO::FETCH_COLUMN), is_string(...)));
     }
 
     private function assuntoDaLinha(mixed $linha): Assunto
