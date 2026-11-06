@@ -13,11 +13,14 @@ services:
       BANCO_USUARIO: aplicacao
       BANCO_SENHA: ${BANCO_SENHA:?rode sh bin/gerar-env para criar o .env}
       GOTENBERG_URL: http://gotenberg:3000
+      REDIS_URL: tcp://redis:6379
       NGINX_HTPASSWD: ${NGINX_HTPASSWD:?rode sh bin/gerar-env para criar o .env}
     depends_on:
       mysql:
         condition: service_healthy
       gotenberg:
+        condition: service_started
+      redis:
         condition: service_started
 
   web:
@@ -54,6 +57,19 @@ services:
       - --api-timeout=20s
       - --chromium-disable-javascript=true
       - --chromium-allow-list=^file:///tmp/.*
+
+  redis:
+    image: redis:8.10.1-alpine
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - 64mb
+      - --maxmemory-policy
+      - volatile-lru
 
 volumes:
   mysql:

@@ -10,11 +10,14 @@ services:
       BANCO_USUARIO: aplicacao
       BANCO_SENHA: ${BANCO_SENHA:?defina BANCO_SENHA no .env}
       GOTENBERG_URL: http://gotenberg:3000
+      REDIS_URL: tcp://redis:6379
       NGINX_HTPASSWD: ${NGINX_HTPASSWD:?defina NGINX_HTPASSWD no .env}
     depends_on:
       mysql:
         condition: service_healthy
       gotenberg:
+        condition: service_started
+      redis:
         condition: service_started
     mem_limit: 512m
 
@@ -44,6 +47,21 @@ services:
       - --chromium-allow-list=^file:///tmp/.*
     restart: unless-stopped
     mem_limit: 1g
+
+  redis:
+    image: redis:8.10.1-alpine
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - 64mb
+      - --maxmemory-policy
+      - volatile-lru
+    restart: unless-stopped
+    mem_limit: 128m
 
   web:
     image: ghcr.io/otaviomc/scripta-manent-web:producao
