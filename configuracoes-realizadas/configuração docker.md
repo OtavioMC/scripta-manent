@@ -207,3 +207,39 @@
    docker build --target php --build-arg VERSAO=abc1234 -t sm-php:teste .
    docker build --target web -t sm-web:teste .
    ```
+
+8. Passei a servir o Bootstrap pelo nginx, direto da pasta do Composer
+
+   No `docker/nginx/comum.conf`, a CSP passou a aceitar imagens `data:` (usadas pelos ícones do CSS do Bootstrap) e entraram duas regras antes do `location /`
+
+   ```nginx
+   add_header Content-Security-Policy "default-src 'self'; img-src 'self' data:; frame-ancestors 'none'" always;
+
+   location /assets/bootstrap/ {
+       alias /app/bootstrap/;
+   }
+
+   location /assets/ {
+       try_files $uri =404;
+   }
+   ```
+
+   No `compose.yaml`, montei o Bootstrap no serviço `web`
+
+   ```yaml
+   - ./vendor/twbs/bootstrap/dist:/app/bootstrap:ro
+   ```
+
+   No `Dockerfile`, a imagem `web` copia o Bootstrap das dependências e a imagem `php` passou a levar os templates
+
+   ```dockerfile
+   COPY --from=dependencias /app/vendor/twbs/bootstrap/dist/ /app/bootstrap/
+   ```
+
+   ```dockerfile
+   COPY templates/ templates/
+   ```
+
+   ```bash
+   docker compose up -d --force-recreate web
+   ```

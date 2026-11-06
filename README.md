@@ -116,6 +116,17 @@ docker compose run --rm php composer testes
 
 ## Versões
 
+### 0.3.0
+
+Cria o layout e a tela inicial.
+
+- Adiciona o Twig e o Bootstrap 5
+- Cria o layout base, com menu, tema claro e escuro e o provérbio na barra
+- Cria a tela inicial, com carrossel de largura total, atalhos para as telas e uma seção sobre o sistema
+- Troca as respostas de erro 404 e 405 por páginas no layout do site, dizendo o que aconteceu e o que fazer
+- Adiciona o tratador global de erros, que mostra a página 500 sem detalhe tecnico e registra a falha em log JSON
+
+
 ### 0.2.0
 
 Cria o banco de dados.
