@@ -12,9 +12,12 @@ services:
       BANCO_NOME: scripta_manent
       BANCO_USUARIO: aplicacao
       BANCO_SENHA: ${BANCO_SENHA:?rode sh bin/gerar-env para criar o .env}
+      GOTENBERG_URL: http://gotenberg:3000
     depends_on:
       mysql:
         condition: service_healthy
+      gotenberg:
+        condition: service_started
 
   web:
     image: nginx:1.30.6-alpine
@@ -42,6 +45,14 @@ services:
       interval: 2s
       timeout: 5s
       retries: 60
+
+  gotenberg:
+    image: gotenberg/gotenberg:8.38.1
+    command:
+      - gotenberg
+      - --api-timeout=20s
+      - --chromium-disable-javascript=true
+      - --chromium-allow-list=^file:///tmp/.*
 
 volumes:
   mysql:
