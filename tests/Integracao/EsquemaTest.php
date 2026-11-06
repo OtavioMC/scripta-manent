@@ -84,6 +84,75 @@ final class EsquemaTest extends TestCase
         yield 'Livro_Assunto composta' => ['Livro_Assunto', ['Livro_Codl', 'Assunto_codAs']];
     }
 
+    public function testChavesEstrangeirasSeguemODiagramaSemCascata(): void
+    {
+        $chaves = $this->valores(
+            "SELECT CONCAT(k.CONSTRAINT_NAME, ' ', k.TABLE_NAME, '.', k.COLUMN_NAME, ' -> ',
+                    k.REFERENCED_TABLE_NAME, '.', k.REFERENCED_COLUMN_NAME,
+                    ' ON DELETE ', r.DELETE_RULE, ' ON UPDATE ', r.UPDATE_RULE) AS valor
+             FROM information_schema.KEY_COLUMN_USAGE k
+             JOIN information_schema.REFERENTIAL_CONSTRAINTS r
+               ON r.CONSTRAINT_SCHEMA = k.CONSTRAINT_SCHEMA AND r.CONSTRAINT_NAME = k.CONSTRAINT_NAME
+             WHERE k.TABLE_SCHEMA = DATABASE() AND k.REFERENCED_TABLE_NAME IS NOT NULL
+             ORDER BY k.CONSTRAINT_NAME",
+        );
+
+        self::assertSame([
+            'Rel_01 Livro_Autor.Livro_Codl -> Livro.Codl ON DELETE NO ACTION ON UPDATE NO ACTION',
+            'Rel_02 Livro_Autor.Autor_CodAu -> Autor.CodAu ON DELETE NO ACTION ON UPDATE NO ACTION',
+            'Rel_03 Livro_Assunto.Livro_Codl -> Livro.Codl ON DELETE NO ACTION ON UPDATE NO ACTION',
+            'Rel_04 Livro_Assunto.Assunto_codAs -> Assunto.codAs ON DELETE NO ACTION ON UPDATE NO ACTION',
+        ], $chaves);
+    }
+
+    public function testIndicesSeguemODiagrama(): void
+    {
+        $indices = $this->valores(
+            "SELECT CONCAT(TABLE_NAME, '.', INDEX_NAME, ' (',
+                    GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX), ')') AS valor
+             FROM information_schema.STATISTICS
+             WHERE TABLE_SCHEMA = DATABASE() AND INDEX_NAME <> 'PRIMARY'
+             GROUP BY TABLE_NAME, INDEX_NAME
+             ORDER BY TABLE_NAME, INDEX_NAME",
+        );
+
+        self::assertSame([
+            'Livro_Assunto.Livro_Assunto_FKIndex1 (Livro_Codl)',
+            'Livro_Assunto.Livro_Assunto_FKIndex2 (Assunto_codAs)',
+            'Livro_Autor.Livro_Autor_FKIndex1 (Livro_Codl)',
+            'Livro_Autor.Livro_Autor_FKIndex2 (Autor_CodAu)',
+        ], $indices);
+    }
+
+    public function testSoAsChavesSimplesGeramCodigoAutomatico(): void
+    {
+        $colunas = $this->valores(
+            "SELECT CONCAT(TABLE_NAME, '.', COLUMN_NAME) AS valor FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND EXTRA LIKE '%auto_increment%'
+             ORDER BY TABLE_NAME",
+        );
+
+        self::assertSame(['Assunto.codAs', 'Autor.CodAu', 'Livro.Codl'], $colunas);
+    }
+
+    public function testTabelasUsamInnoDbEUtf8mb4(): void
+    {
+        $tabelas = $this->valores(
+            "SELECT CONCAT(TABLE_NAME, ' ', ENGINE, ' ', LEFT(TABLE_COLLATION, 7)) AS valor
+             FROM information_schema.TABLES
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'
+             ORDER BY TABLE_NAME",
+        );
+
+        self::assertSame([
+            'Assunto InnoDB utf8mb4',
+            'Autor InnoDB utf8mb4',
+            'Livro InnoDB utf8mb4',
+            'Livro_Assunto InnoDB utf8mb4',
+            'Livro_Autor InnoDB utf8mb4',
+        ], $tabelas);
+    }
+
     /**
      * @return list<string>
      */
