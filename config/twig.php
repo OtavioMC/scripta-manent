@@ -9,7 +9,7 @@ return (static function (): Environment {
     $twig = new Environment(new FilesystemLoader(__DIR__ . '/../templates'), [
         'autoescape' => 'html',
         'auto_reload' => true,
-        'cache' => sys_get_temp_dir() . '/twig',
+        'cache' => sys_get_temp_dir() . '/twig-' . PHP_SAPI,
         'strict_variables' => true,
     ]);
     $twig->addGlobal('menu', [
