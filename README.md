@@ -116,6 +116,16 @@ docker compose run --rm php composer testes
 
 ## Versões
 
+### 0.7.0
+
+Adiciona a busca e protege os formulários.
+
+- Busca nas listas de livros, autores e assuntos e no relatório, sem diferenciar maiúsculas nem acentos
+- Livros são encontrados pelo título, editora, ano e pelos nomes de autores e assuntos
+- No relatório, a busca traz o livro com todos os autores, e o PDF sai com o mesmo filtro
+- O modal de exclusão bloqueada ganha o botão "Mostrar títulos", que abre os livros do autor ou assunto
+- Todo formulário que grava dados leva um token CSRF, e envio sem token é recusado
+
 ### 0.6.0
 
 Cria o relatório de livros por autor.
