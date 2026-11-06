@@ -6,6 +6,8 @@ namespace ScriptaManent\Infrastructure\Banco;
 
 use Closure;
 use PDO;
+use PDOException;
+use ScriptaManent\Application\BancoIndisponivel;
 use Throwable;
 
 final class Conexao
@@ -21,7 +23,11 @@ final class Conexao
 
     public function pdo(): PDO
     {
-        return $this->pdo ??= ($this->abrir)();
+        try {
+            return $this->pdo ??= ($this->abrir)();
+        } catch (PDOException $erro) {
+            throw new BancoIndisponivel('A conexão com o MySQL falhou.', 0, $erro);
+        }
     }
 
     /**

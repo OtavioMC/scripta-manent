@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
+use ScriptaManent\Application\BancoIndisponivel;
 use Throwable;
 
 final readonly class TratadorDeErros implements RequestHandlerInterface
@@ -23,6 +24,19 @@ final readonly class TratadorDeErros implements RequestHandlerInterface
     {
         try {
             return $this->aplicacao->handle($request);
+        } catch (BancoIndisponivel $erro) {
+            $this->log->critical('Banco fora do ar em {metodo} {caminho}', [
+                'exception' => $erro,
+                'metodo' => $request->getMethod(),
+                'caminho' => $request->getUri()->getPath(),
+            ]);
+
+            return $this->erros->responder(
+                503,
+                'Sistema indisponível no momento',
+                'Os cadastros não puderam ser carregados agora.',
+                'Espere alguns minutos e recarregue a página.',
+            );
         } catch (Throwable $erro) {
             $this->log->error('Falha ao responder {metodo} {caminho}', [
                 'exception' => $erro,
