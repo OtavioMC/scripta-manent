@@ -10,8 +10,8 @@ SELECT
   Livro.Valor,
   AssuntosDoLivro.Assuntos
 FROM Livro
-JOIN Livro_Autor ON Livro_Autor.Livro_Codl = Livro.Codl
-JOIN Autor ON Autor.CodAu = Livro_Autor.Autor_CodAu
+LEFT JOIN Livro_Autor ON Livro_Autor.Livro_Codl = Livro.Codl
+LEFT JOIN Autor ON Autor.CodAu = Livro_Autor.Autor_CodAu
 LEFT JOIN (
   SELECT
     Livro_Assunto.Livro_Codl,
