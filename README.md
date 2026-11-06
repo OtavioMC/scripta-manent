@@ -79,7 +79,7 @@ VPS da Hetzner com Docker Compose, atrás da Cloudflare (DNS, HTTPS e um tunnel,
 
 O GitHub Actions roda lint, PHPStan, Deptrac, testes e `composer audit` em todo push. Nos pushes na `main`, gera a imagem e publica no GitHub Container Registry. Depois que eu aprovo, o servidor percebe a imagem nova em até um minuto, baixa e reinicia sozinho, sem nenhuma porta aberta para o GitHub.
 
-O ambiente online pede usuário e senha. O administrador tem uma credencial própria no `.env`, guardada como hash, que libera remover vínculos e restaurar os dados de exemplo. Não tem tabela de usuários porque eu não queria mexer no modelo.
+O sistema pede login numa tela própria. A credencial fica na variável `NGINX_HTPASSWD` do `.env`, no formato `usuario:hash` gerado pelo `htpasswd`, e a sessão expira depois de 2 horas sem uso. Não tem tabela de usuários porque eu não queria mexer no modelo.
 
 O passo a passo do domínio, da VPS, do tunnel e do pipeline está na pasta [configuracoes-realizadas](configuracoes-realizadas).
 
@@ -95,7 +95,7 @@ docker compose up -d --build
 docker compose run --rm php composer install
 ```
 
-Site em http://localhost:8080.
+Site em http://localhost:8080. O `bin/gerar-env` mostra no terminal o usuário e a senha do login local.
 
 Os scripts do banco só rodam com o volume vazio. Pra recriar o banco do zero, com os dados de exemplo
 
@@ -115,6 +115,16 @@ docker compose run --rm php composer testes
 ```
 
 ## Versões
+
+### 0.8.0
+
+Troca a senha do navegador por uma tela de login.
+
+- Tela de login própria, com sessão de 2 horas sem uso e botão para sair
+- Todas as páginas pedem login, menos o login e o `/versao`, e depois de entrar a pessoa volta para a página que tinha pedido
+- Mesma mensagem para usuário inexistente e senha errada, com bloqueio crescente depois de 5 tentativas erradas
+- Login, falhas e saídas ficam registrados no log de auditoria
+- Ícone do site
 
 ### 0.7.0
 

@@ -265,3 +265,30 @@
    ```bash
    docker compose up -d
    ```
+
+10. Tirei a senha do nginx, que passou para a tela de login da aplicação
+
+   Apaguei o `docker/nginx/htpasswd.sh` e a linha que copiava ele no `Dockerfile`. O `docker/nginx/producao.conf` ficou só com o limite de tentativas no `/login`, pelo IP real que a Cloudflare manda
+
+   ```nginx
+   limit_req_zone $http_cf_connecting_ip zone=login:10m rate=10r/m;
+
+   server {
+       include /etc/nginx/comum.conf;
+
+       location = /login {
+           limit_req zone=login burst=5 nodelay;
+           limit_req_status 429;
+           fastcgi_pass php:9000;
+           include fastcgi_params;
+           fastcgi_param SCRIPT_FILENAME /app/public/index.php;
+           fastcgi_hide_header X-Powered-By;
+       }
+   }
+   ```
+
+   No `compose.yaml` e no `compose.prod.yaml`, a variável `NGINX_HTPASSWD` saiu do serviço `web` e foi para o `php`
+
+   ```yaml
+   NGINX_HTPASSWD: ${NGINX_HTPASSWD:?defina NGINX_HTPASSWD no .env}
+   ```
