@@ -20,16 +20,22 @@ final readonly class GrupoDeLivros
 
     public function titulo(): string
     {
-        return '';
+        $autores = $this->autores;
+        $ultimo = array_pop($autores);
+        if ($ultimo === null) {
+            return '';
+        }
+
+        return $autores === [] ? $ultimo : implode(', ', $autores) . ' e ' . $ultimo;
     }
 
     public function quantidade(): int
     {
-        return 0;
+        return count($this->livros);
     }
 
     public function valor(): Dinheiro
     {
-        return Dinheiro::doBanco('0.00');
+        return Relatorio::somar($this->livros);
     }
 }

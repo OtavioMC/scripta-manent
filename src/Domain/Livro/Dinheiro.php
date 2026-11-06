@@ -44,6 +44,16 @@ final readonly class Dinheiro
         return new self(self::MAXIMO_EM_CENTAVOS);
     }
 
+    public static function zero(): self
+    {
+        return new self(0);
+    }
+
+    public function mais(self $outro): self
+    {
+        return new self($this->centavos + $outro->centavos);
+    }
+
     public static function doBanco(string $decimal): self
     {
         [$inteiro, $fracao] = array_pad(explode('.', $decimal), 2, '00');
