@@ -9,8 +9,10 @@ use RuntimeException;
 
 final class ConexaoDeTeste
 {
+    private static ?PDO $pdo = null;
+
     /**
-     * @param array<string, string> $parametros
+     * @param array<string, string|int> $parametros
      * @return list<array<string, string|null>>
      */
     public static function consultar(string $sql, array $parametros = []): array
@@ -30,20 +32,46 @@ final class ConexaoDeTeste
         return $linhas;
     }
 
+    /**
+     * @param array<string, string|int> $parametros
+     */
+    public static function inserir(string $sql, array $parametros): int
+    {
+        self::pdo()->prepare($sql)->execute($parametros);
+
+        return (int) self::pdo()->lastInsertId();
+    }
+
+    public static function iniciarTransacao(): void
+    {
+        self::pdo()->beginTransaction();
+    }
+
+    public static function desfazerTransacao(): void
+    {
+        if (self::pdo()->inTransaction()) {
+            self::pdo()->rollBack();
+        }
+    }
+
     private static function pdo(): PDO
     {
-        $dsn = sprintf(
-            'mysql:host=%s;dbname=%s;charset=utf8mb4',
-            self::variavel('BANCO_HOST'),
-            self::variavel('BANCO_NOME'),
-        );
+        if (self::$pdo === null) {
+            $dsn = sprintf(
+                'mysql:host=%s;dbname=%s;charset=utf8mb4',
+                self::variavel('BANCO_HOST'),
+                self::variavel('BANCO_NOME'),
+            );
 
-        return new PDO(
-            $dsn,
-            self::variavel('BANCO_USUARIO'),
-            self::variavel('BANCO_SENHA'),
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
-        );
+            self::$pdo = new PDO(
+                $dsn,
+                self::variavel('BANCO_USUARIO'),
+                self::variavel('BANCO_SENHA'),
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+            );
+        }
+
+        return self::$pdo;
     }
 
     private static function variavel(string $nome): string
