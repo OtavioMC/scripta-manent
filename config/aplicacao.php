@@ -6,6 +6,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Http\Controller\InicioController;
 use ScriptaManent\Http\Controller\VersaoController;
+use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Roteador;
 use ScriptaManent\Http\Visao;
 use Twig\Environment;
@@ -61,7 +62,7 @@ return (static function (): RequestHandlerInterface {
     ]);
     $visao = new Visao($twig, $respostas);
 
-    return new Roteador($respostas, [
+    return new Roteador(new PaginaDeErro($visao), [
         ['GET', '/', new InicioController($visao)],
         ['GET', '/versao', new VersaoController($respostas, $versao === false ? 'dev' : $versao)],
     ]);

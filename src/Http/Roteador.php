@@ -6,7 +6,6 @@ namespace ScriptaManent\Http;
 
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
-use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -22,7 +21,7 @@ final readonly class Roteador implements RequestHandlerInterface
      * @param list<array{string, string, RequestHandlerInterface}> $rotas
      */
     public function __construct(
-        private ResponseFactoryInterface $respostas,
+        private RespostaDeErro $erros,
         array $rotas,
     ) {
         $this->despachante = simpleDispatcher(static function (RouteCollector $colecao) use ($rotas): void {
@@ -42,7 +41,12 @@ final readonly class Roteador implements RequestHandlerInterface
             Dispatcher::FOUND => $this->handlerEncontrado($resultado[1])
                 ->handle($this->comParametros($request, $resultado[2])),
             Dispatcher::METHOD_NOT_ALLOWED => $this->metodoNaoPermitido($metodo, $caminho, $resultado[1]),
-            default => $this->erro(404, sprintf('Nenhuma página responde no endereço %s.', $caminho)),
+            default => $this->erros->responder(
+                404,
+                'Página não encontrada',
+                sprintf('Nenhuma página responde no endereço %s.', $caminho),
+                'Confira se o endereço foi digitado certo ou escolha uma tela no menu.',
+            ),
         };
     }
 
@@ -76,16 +80,11 @@ final readonly class Roteador implements RequestHandlerInterface
 
         $lista = implode(', ', array_filter($aceitos, is_string(...)));
 
-        return $this->erro(405, sprintf('O endereço %s não aceita %s. Métodos aceitos: %s.', $caminho, $metodo, $lista))
-            ->withHeader('Allow', $lista);
-    }
-
-    private function erro(int $status, string $mensagem): ResponseInterface
-    {
-        $resposta = $this->respostas->createResponse($status)
-            ->withHeader('Content-Type', 'text/plain; charset=utf-8');
-        $resposta->getBody()->write($mensagem);
-
-        return $resposta;
+        return $this->erros->responder(
+            405,
+            'Ação não aceita neste endereço',
+            sprintf('O endereço %s não aceita %s. Métodos aceitos: %s.', $caminho, $metodo, $lista),
+            'Use os botões e os links das telas para fazer cada ação.',
+        )->withHeader('Allow', $lista);
     }
 }

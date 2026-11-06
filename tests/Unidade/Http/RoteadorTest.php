@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace ScriptaManent\Tests\Unidade\Http;
 
-use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ScriptaManent\Http\RespostaDeErro;
 use ScriptaManent\Http\Roteador;
 
 final class RoteadorTest extends TestCase
@@ -71,20 +71,27 @@ final class RoteadorTest extends TestCase
         self::assertSame('Nenhuma página responde no endereço /nao-existe.', (string) $resposta->getBody());
     }
 
-    public function testErrosSaoRespondidosEmTextoPuroUtf8(): void
-    {
-        $resposta = $this->roteador()->handle(new ServerRequest('GET', '/nao-existe'));
-
-        self::assertSame('text/plain; charset=utf-8', $resposta->getHeaderLine('Content-Type'));
-    }
-
     private function roteador(): Roteador
     {
-        return new Roteador(new Psr17Factory(), [
+        return new Roteador($this->respostaDeErroQueDevolveAMensagem(), [
             ['GET', '/versao', $this->handlerQueResponde('resposta da versão')],
             ['GET', '/livros/{codl:\d+}', $this->handlerQueMostraOLivro()],
             ['POST', '/livros/{codl:\d+}', $this->handlerQueResponde('livro alterado')],
         ]);
+    }
+
+    private function respostaDeErroQueDevolveAMensagem(): RespostaDeErro
+    {
+        return new class implements RespostaDeErro {
+            public function responder(
+                int $status,
+                string $titulo,
+                string $mensagem,
+                string $orientacao,
+            ): ResponseInterface {
+                return new Response($status, [], $mensagem);
+            }
+        };
     }
 
     private function handlerQueMostraOLivro(): RequestHandlerInterface

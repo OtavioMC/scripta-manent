@@ -290,6 +290,21 @@ body {
     color: transparent;
 }
 
+.pagina-erro {
+    max-width: 40rem;
+}
+
+.erro-codigo {
+    font-family: var(--sm-fonte-serifa);
+    font-size: clamp(2.5rem, 1.5rem + 4vw, 4rem);
+    font-style: italic;
+    line-height: 1;
+    background-image: var(--sm-degrade-texto);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
 .sobre {
     color: var(--sm-faixa-suave);
     background-color: var(--sm-faixa-fundo);

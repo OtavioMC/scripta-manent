@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block conteudo %}
+    <section class="pagina-erro text-center mx-auto py-lg-5" aria-labelledby="titulo-erro">
+        <p class="erro-codigo mb-2">Erro {{ status }}</p>
+        <h1 class="titulo-secao mb-3" id="titulo-erro">{{ titulo }}</h1>
+        <p class="lead mb-2">{{ mensagem }}</p>
+        <p class="texto-suave mb-4">{{ orientacao }}</p>
+        <a class="btn btn-lg btn-destaque" href="/">Voltar para a tela inicial</a>
+    </section>
+{% endblock %}
