@@ -1,18 +1,21 @@
-{% macro campo(acao, valor, rotulo, dica, quantidade, singular, plural) %}
-    <form class="busca mb-4" method="get" action="{{ acao }}" role="search">
+{% macro campo(acao, valor, rotulo, dica) %}
+    <form class="busca mb-3" method="get" action="{{ acao }}" role="search">
         <label class="visually-hidden" for="campo-busca">{{ rotulo }}</label>
         <div class="input-group">
             <input class="form-control" type="search" id="campo-busca" name="busca" value="{{ valor }}"
-                   maxlength="{{ buscaMaxima }}" placeholder="{{ dica }}">
+                   maxlength="{{ buscaMaxima }}" placeholder="{{ dica }}" autocomplete="off">
             <button class="btn btn-outline-primary" type="submit">Buscar</button>
         </div>
-        {% if valor %}
-            <p class="form-text mb-0 mt-2" role="status">
-                {{ quantidade }} {{ quantidade == 1 ? singular : plural }} para “{{ valor }}”.
-                <a href="{{ acao }}">Limpar busca</a>
-            </p>
-        {% endif %}
     </form>
+{% endmacro %}
+
+{% macro situacao(acao, valor, quantidade, singular, plural) %}
+    {% if valor %}
+        <p class="form-text mb-3" role="status">
+            {{ quantidade }} {{ quantidade == 1 ? singular : plural }} para “{{ valor }}”.
+            <a href="{{ acao }}">Limpar busca</a>
+        </p>
+    {% endif %}
 {% endmacro %}
 
 {% macro nadaEncontrado(valor, acao, dica) %}

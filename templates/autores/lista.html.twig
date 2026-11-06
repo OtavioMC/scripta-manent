@@ -18,11 +18,14 @@
            data-titulo="Cadastrar autor">Cadastrar autor</a>
     </div>
 
-    {{ busca_.campo('/autores', busca, 'Buscar autores', 'Buscar pelo nome do autor', autores|length, 'autor encontrado', 'autores encontrados') }}
-
     {% if aviso %}
         <div class="alert alert-success" role="status">{{ aviso }}</div>
     {% endif %}
+
+    {{ busca_.campo('/autores', busca, 'Buscar autores', 'Buscar pelo nome do autor') }}
+
+    <div data-resultados>
+        {{ busca_.situacao('/autores', busca, autores|length, 'autor encontrado', 'autores encontrados') }}
 
     {% if autores is empty and busca %}
         {{ busca_.nadaEncontrado(busca, '/autores', 'Confira a grafia ou busque só pelo sobrenome.') }}
@@ -71,6 +74,7 @@
             </div>
         </div>
     {% endif %}
+    </div>
 
     {% embed 'componentes/modal-formulario.html.twig' with {titulo: 'Cadastrar autor'} %}
         {% block corpo %}
@@ -108,6 +112,7 @@
 
 {% block scripts %}
     <script type="module" src="/assets/js/confirmar-envio.js"></script>
+    <script type="module" src="/assets/js/busca-instantanea.js"></script>
     <script type="module" src="/assets/js/abrir-modal.js"></script>
     <script type="module" src="/assets/js/formulario-em-modal.js"></script>
     <script type="module" src="/assets/js/validar-formulario.js"></script>

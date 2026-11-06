@@ -15,7 +15,8 @@
             <p class="texto-suave mb-0">Gerado em {{ geradoEm }}, horário de Brasília.</p>
         </div>
         {% if pdfLigado %}
-            <a class="btn btn-destaque" href="/relatorio/pdf{{ busca ? '?busca=' ~ busca|url_encode }}">Baixar PDF</a>
+            <a class="btn btn-destaque" href="/relatorio/pdf{{ busca ? '?busca=' ~ busca|url_encode }}"
+               data-mantem-busca="/relatorio/pdf">Baixar PDF</a>
         {% else %}
             <div class="text-sm-end">
                 <button class="btn btn-destaque" type="button" disabled aria-describedby="pdf-desligado">Baixar PDF</button>
@@ -24,12 +25,18 @@
         {% endif %}
     </div>
 
-    {{ busca_.campo('/relatorio', busca, 'Buscar no relatório', 'Buscar por título, autor, assunto ou editora',
-        relatorio.totalDeLivros, 'livro encontrado', 'livros encontrados') }}
-
     {% if aviso %}
         <div class="alert alert-warning" role="status">{{ aviso }}</div>
     {% endif %}
 
-    {% include 'relatorio/_conteudo.html.twig' %}
+    {{ busca_.campo('/relatorio', busca, 'Buscar no relatório', 'Buscar por título, autor, assunto ou editora') }}
+
+    <div data-resultados>
+        {{ busca_.situacao('/relatorio', busca, relatorio.totalDeLivros, 'livro encontrado', 'livros encontrados') }}
+        {% include 'relatorio/_conteudo.html.twig' %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/assets/js/busca-instantanea.js"></script>
 {% endblock %}
