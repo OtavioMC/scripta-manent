@@ -152,6 +152,10 @@ docker compose run --rm php composer testes
 
 ## Versões
 
+### 1.0.1
+
+Resume as decisões em `docs/decisoes.md`.
+
 ### 1.0.0
 
 Versão entregue.
