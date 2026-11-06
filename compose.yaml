@@ -7,6 +7,14 @@ services:
       target: dev
     volumes:
       - .:/app
+    environment:
+      BANCO_HOST: mysql
+      BANCO_NOME: scripta_manent
+      BANCO_USUARIO: aplicacao
+      BANCO_SENHA: ${BANCO_SENHA:?rode sh bin/gerar-env para criar o .env}
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   web:
     image: nginx:1.30.6-alpine
@@ -18,3 +26,21 @@ services:
       - ./public:/app/public:ro
     depends_on:
       - php
+
+  mysql:
+    image: mysql:8.4.13
+    environment:
+      MYSQL_ROOT_PASSWORD: ${BANCO_SENHA_ROOT:?rode sh bin/gerar-env para criar o .env}
+      MYSQL_DATABASE: scripta_manent
+      BANCO_SENHA: ${BANCO_SENHA:?rode sh bin/gerar-env para criar o .env}
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./banco:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+volumes:
+  mysql:

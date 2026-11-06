@@ -25,6 +25,7 @@
        runs-on: ubuntu-24.04
        steps:
          - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+         - run: sh bin/gerar-env
          - run: docker compose build php
          - run: docker compose run --rm -T php composer install --no-interaction --no-progress
          - run: docker compose run --rm -T php composer sintaxe

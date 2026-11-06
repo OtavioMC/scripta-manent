@@ -79,6 +79,7 @@ Pré-Requisitos: Instalar Git e Docker.
 ```bash
 git clone https://github.com/OtavioMC/scripta-manent.git
 cd scripta-manent
+sh bin/gerar-env
 docker compose up -d --build
 docker compose run --rm php composer install
 ```

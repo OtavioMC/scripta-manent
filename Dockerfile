@@ -2,6 +2,7 @@ FROM composer:2.11.1 AS composer
 
 FROM php:8.4.27-fpm-alpine3.24 AS base
 WORKDIR /app
+RUN docker-php-ext-install pdo_mysql
 
 FROM base AS dev
 RUN apk add --no-cache git \
