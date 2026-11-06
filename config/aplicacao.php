@@ -8,7 +8,9 @@ use ScriptaManent\Http\Controller\InicioController;
 use ScriptaManent\Http\Controller\VersaoController;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Roteador;
+use ScriptaManent\Http\TratadorDeErros;
 use ScriptaManent\Http\Visao;
+use ScriptaManent\Infrastructure\Log\LogEmArquivo;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -61,9 +63,12 @@ return (static function (): RequestHandlerInterface {
         ],
     ]);
     $visao = new Visao($twig, $respostas);
+    $paginaDeErro = new PaginaDeErro($visao);
 
-    return new Roteador(new PaginaDeErro($visao), [
+    $roteador = new Roteador($paginaDeErro, [
         ['GET', '/', new InicioController($visao)],
         ['GET', '/versao', new VersaoController($respostas, $versao === false ? 'dev' : $versao)],
     ]);
+
+    return new TratadorDeErros($roteador, $paginaDeErro, new LogEmArquivo('php://stderr'));
 })();
