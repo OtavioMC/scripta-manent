@@ -109,3 +109,11 @@
        <directory>tests/Funcional</directory>
    </testsuite>
    ```
+
+8. Acrescentei os testes de integração, que rodam contra o MySQL do compose
+
+   ```xml
+   <testsuite name="integracao">
+       <directory>tests/Integracao</directory>
+   </testsuite>
+   ```

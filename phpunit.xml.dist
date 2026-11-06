@@ -17,6 +17,9 @@
         <testsuite name="funcional">
             <directory>tests/Funcional</directory>
         </testsuite>
+        <testsuite name="integracao">
+            <directory>tests/Integracao</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
