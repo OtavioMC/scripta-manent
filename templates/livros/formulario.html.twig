@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block titulo %}{{ editando ? 'Editar livro' : 'Cadastrar livro' }}{% endblock %}
+
+{% block conteudo %}
+    <nav aria-label="Caminho">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/livros">Livros</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ editando ? 'Editar' : 'Cadastrar' }}</li>
+        </ol>
+    </nav>
+
+    <h1 class="titulo-secao mb-4">{{ editando ? 'Editar livro' : 'Cadastrar livro' }}</h1>
+
+    <div class="cartao-formulario cartao-formulario-largo">
+        {% include 'livros/_formulario.html.twig' with {emModal: false} %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/assets/js/mascara-moeda.js"></script>
+    <script type="module" src="/assets/js/validar-formulario.js"></script>
+{% endblock %}

@@ -15,6 +15,22 @@ final class Campos
         return is_string($codigo) && ctype_digit($codigo) ? (int) $codigo : null;
     }
 
+    /**
+     * @return list<int>
+     */
+    public static function codigos(ServerRequestInterface $request, string $nome): array
+    {
+        $corpo = $request->getParsedBody();
+        $valores = is_array($corpo) ? $corpo[$nome] ?? [] : [];
+        if (!is_array($valores)) {
+            return [];
+        }
+
+        $validos = array_filter($valores, static fn (mixed $valor): bool => is_string($valor) && ctype_digit($valor));
+
+        return array_values(array_map(intval(...), $validos));
+    }
+
     public static function texto(ServerRequestInterface $request, string $nome): string
     {
         $corpo = $request->getParsedBody();

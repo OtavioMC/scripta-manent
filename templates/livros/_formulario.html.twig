@@ -1,0 +1,44 @@
+{% import 'macros/formulario.html.twig' as formulario %}
+
+<form method="post" action="{{ acao }}" novalidate data-validar>
+    {% if erros.vinculos is defined %}
+        <div class="alert alert-danger" role="alert">{{ erros.vinculos }}</div>
+    {% endif %}
+
+    {{ formulario.texto('titulo', 'Título', campos.titulo, erros.titulo ?? null, limites.titulo, mensagens.titulo) }}
+    {{ formulario.texto('editora', 'Editora', campos.editora, erros.editora ?? null, limites.editora, mensagens.editora) }}
+
+    <div class="row g-sm-3">
+        <div class="col-sm-4">
+            {{ formulario.campo('edicao', 'Edição', campos.edicao, erros.edicao ?? null,
+                {type: 'number', inputmode: 'numeric', min: limites.edicaoMinima, max: limites.edicaoMaxima, step: 1},
+                mensagens.edicao, mensagens.edicaoFormato,
+                'De ' ~ limites.edicaoMinima ~ ' a ' ~ limites.edicaoMaxima ~ '.') }}
+        </div>
+        <div class="col-sm-4">
+            {{ formulario.campo('ano', 'Ano de publicação', campos.ano, erros.ano ?? null,
+                {type: 'text', inputmode: 'numeric', maxlength: 4, pattern: '\\d{4}'},
+                mensagens.ano, mensagens.anoFormato, 'Quatro dígitos, como 1999.') }}
+        </div>
+        <div class="col-sm-4">
+            {{ formulario.campo('valor', 'Valor (R$)', campos.valor, erros.valor ?? null,
+                {type: 'text', inputmode: 'numeric', maxlength: limites.valor, 'data-mascara': 'moeda',
+                    pattern: '\\d{1,3}(\\.\\d{3})*,\\d{2}'},
+                mensagens.valor, mensagens.valorFormato, 'Em reais, como 1.234,56.') }}
+        </div>
+    </div>
+
+    <div class="row g-sm-4">
+        <div class="col-md-6">
+            {{ formulario.caixas('autores', 'Autores', autores, autoresMarcados,
+                'Nenhum autor cadastrado.', '/autores') }}
+        </div>
+        <div class="col-md-6">
+            {{ formulario.caixas('assuntos', 'Assuntos', assuntos, assuntosMarcados,
+                'Nenhum assunto cadastrado.', '/assuntos') }}
+        </div>
+    </div>
+    <p class="form-text mt-n2 mb-4">Autores e assuntos são opcionais.</p>
+
+    {{ formulario.botoes('Salvar livro', '/livros', emModal) }}
+</form>

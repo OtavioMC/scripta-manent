@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block titulo %}Livros{% endblock %}
+
+{% block conteudo %}
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+        <div>
+            <h1 class="titulo-secao mb-1">Livros</h1>
+            <p class="texto-suave mb-0">Livros cadastrados, em ordem alfabética de título.</p>
+        </div>
+        <a class="btn btn-destaque" href="/livros/novo" data-abrir-formulario data-acao="/livros"
+           data-titulo="Cadastrar livro">Cadastrar livro</a>
+    </div>
+
+    {% if aviso %}
+        <div class="alert alert-success" role="status">{{ aviso }}</div>
+    {% endif %}
+
+    {% if livros is empty %}
+        <div class="estado-vazio text-center">
+            <p class="fw-semibold mb-1">Nenhum livro cadastrado.</p>
+            <p class="texto-suave mb-3">Cadastre o primeiro livro. Autores e assuntos podem ser vinculados depois.</p>
+            <a class="btn btn-destaque" href="/livros/novo" data-abrir-formulario data-acao="/livros"
+               data-titulo="Cadastrar livro">Cadastrar livro</a>
+        </div>
+    {% else %}
+        <div class="cartao-tabela">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Livros cadastrados, em ordem alfabética de título</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Título</th>
+                            <th scope="col">Autores</th>
+                            <th scope="col">Assuntos</th>
+                            <th scope="col">Editora</th>
+                            <th scope="col" class="text-end">Edição</th>
+                            <th scope="col" class="text-end">Ano</th>
+                            <th scope="col" class="text-end">Valor</th>
+                            <th scope="col" class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for livro in livros %}
+                            <tr>
+                                <td class="fw-semibold">{{ livro.titulo }}</td>
+                                <td>{{ livro.autores is empty ? 'Sem autor' : livro.autores|join(', ') }}</td>
+                                <td>{{ livro.assuntos is empty ? 'Sem assunto' : livro.assuntos|join(', ') }}</td>
+                                <td>{{ livro.editora }}</td>
+                                <td class="text-end">{{ livro.edicao }}ª</td>
+                                <td class="text-end">{{ livro.ano }}</td>
+                                <td class="text-end text-nowrap">{{ livro.valor.formatado }}</td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2">
+                                        <a class="btn btn-sm btn-outline-primary" href="/livros/{{ livro.codigo }}/editar"
+                                           data-abrir-formulario data-acao="/livros/{{ livro.codigo }}"
+                                           data-titulo="Editar livro" data-campos="{{ {
+                                               titulo: livro.titulo,
+                                               editora: livro.editora,
+                                               edicao: livro.edicao,
+                                               ano: livro.ano,
+                                               valor: livro.valor.paraCampo,
+                                               autores: livro.codigosDosAutores,
+                                               assuntos: livro.codigosDosAssuntos
+                                           }|json_encode }}">
+                                            Editar<span class="visually-hidden"> {{ livro.titulo }}</span>
+                                        </a>
+                                        <form method="post" action="/livros/{{ livro.codigo }}/excluir"
+                                              data-confirmar="Excluir o livro {{ livro.titulo }}? Os vínculos com autores e assuntos também serão apagados.">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                Excluir<span class="visually-hidden"> {{ livro.titulo }}</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% embed 'componentes/modal-formulario.html.twig' with {titulo: 'Cadastrar livro', tamanho: 'modal-lg'} %}
+        {% block corpo %}
+            {% include 'livros/_formulario.html.twig' with formulario|merge({emModal: true}) only %}
+        {% endblock %}
+    {% endembed %}
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/assets/js/confirmar-envio.js"></script>
+    <script type="module" src="/assets/js/formulario-em-modal.js"></script>
+    <script type="module" src="/assets/js/mascara-moeda.js"></script>
+    <script type="module" src="/assets/js/validar-formulario.js"></script>
+{% endblock %}

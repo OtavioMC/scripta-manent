@@ -6,6 +6,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
+use ScriptaManent\Application\Livro\CadastroDeLivros;
 use ScriptaManent\Http\Controller\Assunto\ExcluirAssuntoController;
 use ScriptaManent\Http\Controller\Assunto\FormularioDeAssuntoController;
 use ScriptaManent\Http\Controller\Assunto\ListaDeAssuntosController;
@@ -17,6 +18,11 @@ use ScriptaManent\Http\Controller\Autor\ListaDeAutoresController;
 use ScriptaManent\Http\Controller\Autor\SalvarAutorController;
 use ScriptaManent\Http\Controller\Autor\TelaDeFormularioDeAutor;
 use ScriptaManent\Http\Controller\InicioController;
+use ScriptaManent\Http\Controller\Livro\ExcluirLivroController;
+use ScriptaManent\Http\Controller\Livro\FormularioDeLivroController;
+use ScriptaManent\Http\Controller\Livro\ListaDeLivrosController;
+use ScriptaManent\Http\Controller\Livro\SalvarLivroController;
+use ScriptaManent\Http\Controller\Livro\TelaDeFormularioDeLivro;
 use ScriptaManent\Http\Controller\VersaoController;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Roteador;
@@ -26,6 +32,7 @@ use ScriptaManent\Http\Visao;
 use ScriptaManent\Infrastructure\Banco\Conexao;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAssuntosPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAutoresPdo;
+use ScriptaManent\Infrastructure\Banco\RepositorioDeLivrosPdo;
 use ScriptaManent\Infrastructure\Log\LogEmArquivo;
 use Twig\Environment;
 
@@ -64,10 +71,21 @@ return (static function (): RequestHandlerInterface {
     $abrirAssunto = new FormularioDeAssuntoController($formularioDeAssunto, $assuntos);
     $salvarAssunto = new SalvarAssuntoController($formularioDeAssunto, $assuntos, $sessao, $visao);
     $excluirAssunto = new ExcluirAssuntoController($formularioDeAssunto, $assuntos, $sessao, $visao);
+    $livros = new CadastroDeLivros(new RepositorioDeLivrosPdo($conexao));
+    $formularioDeLivro = new TelaDeFormularioDeLivro($visao, $paginaDeErro, $autores, $assuntos);
+    $abrirLivro = new FormularioDeLivroController($formularioDeLivro, $livros);
+    $salvarLivro = new SalvarLivroController($formularioDeLivro, $livros, $sessao, $visao);
+    $excluirLivro = new ExcluirLivroController($formularioDeLivro, $livros, $sessao, $visao);
 
     $roteador = new Roteador($paginaDeErro, [
         ['GET', '/', new InicioController($visao)],
         ['GET', '/versao', new VersaoController($respostas, $versao === false ? 'dev' : $versao)],
+        ['GET', '/livros', new ListaDeLivrosController($visao, $livros, $sessao, $formularioDeLivro)],
+        ['GET', '/livros/novo', $abrirLivro],
+        ['POST', '/livros', $salvarLivro],
+        ['GET', '/livros/{codigo:\d+}/editar', $abrirLivro],
+        ['POST', '/livros/{codigo:\d+}', $salvarLivro],
+        ['POST', '/livros/{codigo:\d+}/excluir', $excluirLivro],
         ['GET', '/autores', new ListaDeAutoresController($visao, $autores, $sessao, $formularioDeAutor)],
         ['GET', '/autores/novo', $abrirAutor],
         ['POST', '/autores', $salvarAutor],
