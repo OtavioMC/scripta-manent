@@ -292,3 +292,32 @@
    ```yaml
    NGINX_HTPASSWD: ${NGINX_HTPASSWD:?defina NGINX_HTPASSWD no .env}
    ```
+
+11. Adicionei o Redis, que guarda o cache das listas e do relatório, no `compose.yaml` e no `compose.prod.yaml`, só na rede interna
+
+   ```yaml
+   redis:
+     image: redis:8.10.1-alpine
+     command:
+       - redis-server
+       - --save
+       - ""
+       - --appendonly
+       - "no"
+       - --maxmemory
+       - 64mb
+       - --maxmemory-policy
+       - volatile-lru
+   ```
+
+   Sem persistência porque nada ali é dado definitivo. O `volatile-lru` só descarta chaves com prazo, então as versões das coleções nunca são perdidas por falta de memória.
+
+   No serviço `php`, a variável que liga o cache
+
+   ```yaml
+   REDIS_URL: tcp://redis:6379
+   ```
+
+   ```bash
+   docker compose up -d
+   ```

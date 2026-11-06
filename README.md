@@ -3,6 +3,8 @@ Sistema web em PHP 8.4 para gestão de acervo de livros.
 
 Cadastro de livros, autores e assuntos, com um relatório dos livros agrupados por autor. Um livro pode ter vários autores e vários assuntos.
 
+O sistema está no ar em https://scriptamanent.com.br, com login e senha enviados pelo devido canal de comunicação.
+
 O nome vem do provérbio latino "verba volant, scripta manent", "as palavras voam, o que está escrito permanece". Uma conversa se perde no ar, mas um livro atravessa séculos na estante. Achei justo que um sistema feito para guardar livros carregasse essa ideia.
 
 ## Tecnologias
@@ -34,7 +36,22 @@ O PDF sai do mesmo template da tela e é gerado pelo Gotenberg, um Chromium roda
 
 ### Cache
 
-Listas e relatório ficam em cache no Redis. Se alguém mudar os dados enquanto você está com a página aberta, aparece um aviso pra recarregar. Com o Redis desligado tudo funciona direto no MySQL, só sem o aviso.
+Listas, buscas e relatório ficam em cache no Redis por até 5 minutos. Cada coleção tem um número de versão, que entra na chave do cache. Toda gravação incrementa a versão depois do commit, então o cache antigo deixa de ser lido na hora, sem precisar apagar nada. O botão de restaurar os dados de exemplo incrementa as quatro coleções.
+
+Se alguém mudar os dados enquanto você está com a página aberta, aparece um aviso pra atualizar. A página guarda a versão com que abriu e consulta `/versoes` a cada 15 segundos.
+
+Com `REDIS_URL` vazio, ou com o Redis fora do ar, tudo funciona direto no MySQL, só sem o aviso. A queda vai pro log.
+
+O cabeçalho `Server-Timing` mostra de onde veio cada leitura e quanto tempo levou, e dá pra ver na aba Network do DevTools. Medi a mediana de 30 requisições no Docker local:
+
+| Cenário | Leitura no MySQL | Leitura no Redis | Página sem cache | Página com cache |
+|---|---|---|---|---|
+| Relatório, 12 livros | 7,4 ms | 5,1 ms | 70,5 ms | 53,1 ms |
+| Lista de livros, 12 livros | 6,4 ms | 4,1 ms | 78,5 ms | 55,5 ms |
+| Busca no relatório, 5 mil livros | 89,0 ms | 5,0 ms | 154,8 ms | 49,5 ms |
+| Busca em livros, 5 mil livros | 36,7 ms | 4,4 ms | 109,7 ms | 62,1 ms |
+
+Com poucos livros o ganho é pequeno, porque o MySQL já é rápido. Com volume ele aparece, principalmente na busca, que precisa varrer a tabela.
 
 ## Arquitetura
 
@@ -67,7 +84,7 @@ Um teste de integração compara o banco real com o modelo pelo `information_sch
 
 ## Testes
 
-TDD com PHPUnit, em três níveis.
+Testes com PHPUnit, em três níveis. As regras do domínio e o agrupamento do relatório foram feitos em TDD, com o teste commitado antes do código.
 
 - Unidade, para o domínio e os casos de uso, com implementações falsas.
 - Integração, contra um MySQL em contêiner, para repositórios, view e estrutura do banco.
@@ -115,6 +132,15 @@ docker compose run --rm php composer testes
 ```
 
 ## Versões
+
+### 0.9.0
+
+Adiciona o cache no Redis e a busca instantânea.
+
+- Listas, buscas e relatório em cache no Redis, invalidado a cada gravação e ao restaurar os dados de exemplo
+- Aviso na tela quando os registros mudam depois que a página abriu
+- Cabeçalho `Server-Timing` com a origem e o tempo de cada leitura
+- Busca que atualiza os resultados enquanto a pessoa digita
 
 ### 0.8.0
 
