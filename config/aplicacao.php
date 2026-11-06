@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Server\RequestHandlerInterface;
+use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
+use ScriptaManent\Http\Controller\Assunto\ExcluirAssuntoController;
+use ScriptaManent\Http\Controller\Assunto\FormularioDeAssuntoController;
+use ScriptaManent\Http\Controller\Assunto\ListaDeAssuntosController;
+use ScriptaManent\Http\Controller\Assunto\SalvarAssuntoController;
+use ScriptaManent\Http\Controller\Assunto\TelaDeFormularioDeAssunto;
 use ScriptaManent\Http\Controller\Autor\ExcluirAutorController;
 use ScriptaManent\Http\Controller\Autor\FormularioDeAutorController;
 use ScriptaManent\Http\Controller\Autor\ListaDeAutoresController;
@@ -18,6 +24,7 @@ use ScriptaManent\Http\SessaoNativa;
 use ScriptaManent\Http\TratadorDeErros;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Infrastructure\Banco\Conexao;
+use ScriptaManent\Infrastructure\Banco\RepositorioDeAssuntosPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAutoresPdo;
 use ScriptaManent\Infrastructure\Log\LogEmArquivo;
 use Twig\Environment;
@@ -52,6 +59,11 @@ return (static function (): RequestHandlerInterface {
     $abrirAutor = new FormularioDeAutorController($formularioDeAutor, $autores);
     $salvarAutor = new SalvarAutorController($formularioDeAutor, $autores, $sessao, $visao);
     $excluirAutor = new ExcluirAutorController($formularioDeAutor, $autores, $sessao, $visao);
+    $assuntos = new CadastroDeAssuntos(new RepositorioDeAssuntosPdo($conexao));
+    $formularioDeAssunto = new TelaDeFormularioDeAssunto($visao, $paginaDeErro);
+    $abrirAssunto = new FormularioDeAssuntoController($formularioDeAssunto, $assuntos);
+    $salvarAssunto = new SalvarAssuntoController($formularioDeAssunto, $assuntos, $sessao, $visao);
+    $excluirAssunto = new ExcluirAssuntoController($formularioDeAssunto, $assuntos, $sessao, $visao);
 
     $roteador = new Roteador($paginaDeErro, [
         ['GET', '/', new InicioController($visao)],
@@ -62,6 +74,12 @@ return (static function (): RequestHandlerInterface {
         ['GET', '/autores/{codigo:\d+}/editar', $abrirAutor],
         ['POST', '/autores/{codigo:\d+}', $salvarAutor],
         ['POST', '/autores/{codigo:\d+}/excluir', $excluirAutor],
+        ['GET', '/assuntos', new ListaDeAssuntosController($visao, $assuntos, $sessao)],
+        ['GET', '/assuntos/novo', $abrirAssunto],
+        ['POST', '/assuntos', $salvarAssunto],
+        ['GET', '/assuntos/{codigo:\d+}/editar', $abrirAssunto],
+        ['POST', '/assuntos/{codigo:\d+}', $salvarAssunto],
+        ['POST', '/assuntos/{codigo:\d+}/excluir', $excluirAssunto],
     ]);
 
     return new TratadorDeErros($roteador, $paginaDeErro, new LogEmArquivo('php://stderr'));

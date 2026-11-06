@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block titulo %}Assuntos{% endblock %}
+
+{% block conteudo %}
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+        <div>
+            <h1 class="titulo-secao mb-1">Assuntos</h1>
+            <p class="texto-suave mb-0">Assuntos que podem ser vinculados aos livros, em ordem alfabética.</p>
+        </div>
+        <a class="btn btn-destaque" href="/assuntos/novo">Cadastrar assunto</a>
+    </div>
+
+    {% if aviso %}
+        <div class="alert alert-success" role="status">{{ aviso }}</div>
+    {% endif %}
+
+    {% if assuntos is empty %}
+        <div class="estado-vazio text-center">
+            <p class="fw-semibold mb-1">Nenhum assunto cadastrado.</p>
+            <p class="texto-suave mb-3">Cadastre o primeiro assunto para poder vinculá-lo aos livros.</p>
+            <a class="btn btn-destaque" href="/assuntos/novo">Cadastrar assunto</a>
+        </div>
+    {% else %}
+        <div class="cartao-tabela">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Assuntos cadastrados, em ordem alfabética</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Descrição</th>
+                            <th scope="col" class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assunto in assuntos %}
+                            <tr>
+                                <td>{{ assunto.descricao }}</td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2">
+                                        <a class="btn btn-sm btn-outline-primary" href="/assuntos/{{ assunto.codigo }}/editar">
+                                            Editar<span class="visually-hidden"> {{ assunto.descricao }}</span>
+                                        </a>
+                                        <form method="post" action="/assuntos/{{ assunto.codigo }}/excluir"
+                                              data-confirmar="Excluir o assunto {{ assunto.descricao }}?">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                Excluir<span class="visually-hidden"> {{ assunto.descricao }}</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if bloqueio %}
+        <div class="modal fade" id="modal-bloqueio" tabindex="-1" aria-labelledby="titulo-bloqueio" aria-hidden="true"
+             data-abrir-ao-carregar>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="titulo-bloqueio">Exclusão bloqueada</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{ bloqueio.mensagem }}</p>
+                        <p class="fw-semibold mb-1">Livros vinculados</p>
+                        <ul class="mb-0">
+                            {% for titulo in bloqueio.titulos %}
+                                <li>{{ titulo }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/assets/js/confirmar-envio.js"></script>
+    <script type="module" src="/assets/js/abrir-modal.js"></script>
+{% endblock %}

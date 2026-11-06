@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% import 'macros/formulario.html.twig' as formulario %}
+
+{% block titulo %}{{ editando ? 'Editar assunto' : 'Cadastrar assunto' }}{% endblock %}
+
+{% block conteudo %}
+    <nav aria-label="Caminho">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/assuntos">Assuntos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ editando ? 'Editar' : 'Cadastrar' }}</li>
+        </ol>
+    </nav>
+
+    <h1 class="titulo-secao mb-4">{{ editando ? 'Editar assunto' : 'Cadastrar assunto' }}</h1>
+
+    <form class="cartao-formulario" method="post" action="{{ acao }}" novalidate data-validar>
+        {{ formulario.texto('descricao', 'Descrição', descricao, erros.descricao ?? null, descricaoMaxima, descricaoObrigatoria) }}
+        <div class="d-flex flex-column flex-sm-row gap-2">
+            <button class="btn btn-destaque" type="submit">Salvar assunto</button>
+            <a class="btn btn-outline-primary" href="/assuntos">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/assets/js/validar-formulario.js"></script>
+{% endblock %}
