@@ -49,6 +49,15 @@ final readonly class Dinheiro
         return new self(0);
     }
 
+    public static function deCentavos(int $centavos): self
+    {
+        if ($centavos < 0 || $centavos > self::MAXIMO_EM_CENTAVOS) {
+            throw new ErroDeValidacao(['valor' => sprintf('Valor aceita até %s.', self::maximo()->formatado())]);
+        }
+
+        return new self($centavos);
+    }
+
     public function mais(self $outro): self
     {
         return new self($this->centavos + $outro->centavos);

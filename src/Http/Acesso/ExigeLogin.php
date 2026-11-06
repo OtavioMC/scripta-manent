@@ -13,6 +13,7 @@ use ScriptaManent\Http\Visao;
 final readonly class ExigeLogin implements RequestHandlerInterface
 {
     private const array ROTAS_PUBLICAS = ['/login', '/versao'];
+    private const string CONSULTA_DE_VERSOES = '/versoes';
 
     public function __construct(
         private RequestHandlerInterface $aplicacao,
@@ -29,7 +30,7 @@ final readonly class ExigeLogin implements RequestHandlerInterface
             return $this->aplicacao->handle($request);
         }
 
-        $situacao = $this->acesso->situacao();
+        $situacao = $this->acesso->situacao($caminho !== self::CONSULTA_DE_VERSOES);
         if ($situacao === Situacao::Autenticado) {
             return $this->aplicacao->handle($request);
         }

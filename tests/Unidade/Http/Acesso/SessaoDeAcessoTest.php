@@ -50,6 +50,16 @@ final class SessaoDeAcessoTest extends TestCase
         self::assertSame(Situacao::Autenticado, $this->acesso()->situacao());
     }
 
+    public function testConsultaDeVersoesNaoContaComoUso(): void
+    {
+        $this->acesso()->entrar('avaliador');
+        $this->agora += 7000;
+        $this->acesso()->situacao(contaComoUso: false);
+        $this->agora += 7000;
+
+        self::assertSame(Situacao::Expirado, $this->acesso()->situacao());
+    }
+
     public function testMaisDeDuasHorasSemUsoExpiraASessao(): void
     {
         $this->acesso()->entrar('avaliador');

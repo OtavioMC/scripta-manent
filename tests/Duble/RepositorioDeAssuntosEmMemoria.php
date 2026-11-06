@@ -11,6 +11,8 @@ use ScriptaManent\Domain\ExclusaoBloqueada;
 
 final class RepositorioDeAssuntosEmMemoria implements RepositorioDeAssuntos
 {
+    public int $listagens = 0;
+
     /** @var array<int, Assunto> */
     private array $assuntos = [];
 
@@ -29,6 +31,7 @@ final class RepositorioDeAssuntosEmMemoria implements RepositorioDeAssuntos
 
     public function listar(?Busca $busca = null): array
     {
+        $this->listagens++;
         $assuntos = array_values($this->assuntos);
         usort($assuntos, static fn (Assunto $a, Assunto $b): int => strcmp($a->descricao, $b->descricao));
 

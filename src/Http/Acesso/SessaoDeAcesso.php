@@ -32,7 +32,7 @@ final readonly class SessaoDeAcesso
         $this->sessao->encerrar();
     }
 
-    public function situacao(): Situacao
+    public function situacao(bool $contaComoUso = true): Situacao
     {
         $acesso = $this->sessao->obter(self::CHAVE);
         $usuario = is_array($acesso) ? $acesso['usuario'] ?? null : null;
@@ -48,7 +48,7 @@ final readonly class SessaoDeAcesso
             return Situacao::Expirado;
         }
 
-        $this->sessao->guardar(self::CHAVE, ['usuario' => $usuario, 'ultimoUso' => $agora]);
+        $this->sessao->guardar(self::CHAVE, ['usuario' => $usuario, 'ultimoUso' => $agora, 'uso' => $contaComoUso]);
 
         return Situacao::Autenticado;
     }

@@ -11,6 +11,8 @@ use ScriptaManent\Domain\ExclusaoBloqueada;
 
 final class RepositorioDeAutoresEmMemoria implements RepositorioDeAutores
 {
+    public int $listagens = 0;
+
     /** @var array<int, Autor> */
     private array $autores = [];
 
@@ -29,6 +31,7 @@ final class RepositorioDeAutoresEmMemoria implements RepositorioDeAutores
 
     public function listar(?Busca $busca = null): array
     {
+        $this->listagens++;
         $autores = array_values($this->autores);
         usort($autores, static fn (Autor $a, Autor $b): int => strcmp($a->nome, $b->nome));
 

@@ -11,6 +11,8 @@ use ScriptaManent\Domain\Livro\Livro;
 
 final class RepositorioDeLivrosEmMemoria implements RepositorioDeLivros
 {
+    public int $listagens = 0;
+
     /** @var array<int, Livro> */
     private array $livros = [];
 
@@ -24,6 +26,7 @@ final class RepositorioDeLivrosEmMemoria implements RepositorioDeLivros
 
     public function listar(?Busca $busca = null): array
     {
+        $this->listagens++;
         $lista = array_map(fn (Livro $livro): LivroNaLista => new LivroNaLista(
             (int) $livro->codigo,
             $livro->titulo,

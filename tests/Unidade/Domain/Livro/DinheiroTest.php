@@ -50,6 +50,23 @@ final class DinheiroTest extends TestCase
         self::assertSame(['valor' => 'Valor aceita até R$ 99.999.999,99.'], $this->errosAoLer('100.000.000,00'));
     }
 
+    public function testCriaOValorPelosCentavos(): void
+    {
+        self::assertSame('R$ 12,34', Dinheiro::deCentavos(1234)->formatado());
+    }
+
+    public function testRecusaCentavosForaDoQueAColunaGuarda(): void
+    {
+        $this->expectException(ErroDeValidacao::class);
+
+        Dinheiro::deCentavos(-1);
+    }
+
+    public function testSomaEmCentavosSemPerderPrecisao(): void
+    {
+        self::assertSame(30, Dinheiro::deCentavos(10)->mais(Dinheiro::deCentavos(20))->centavos);
+    }
+
     public function testLeOValorGuardadoNoBanco(): void
     {
         self::assertSame(3990, Dinheiro::doBanco('39.90')->centavos);
