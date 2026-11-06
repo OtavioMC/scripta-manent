@@ -7,6 +7,8 @@ O sistema está no ar em https://scriptamanent.com.br, com login e senha enviado
 
 O nome vem do provérbio latino "verba volant, scripta manent", "as palavras voam, o que está escrito permanece". Uma conversa se perde no ar, mas um livro atravessa séculos na estante. Achei justo que um sistema feito para guardar livros carregasse essa ideia.
 
+As decisões de arquitetura e tecnologia estão em [docs/decisoes.md](docs/decisoes.md).
+
 ## Tecnologias
 
 | O quê | Escolha |
@@ -100,19 +102,36 @@ O sistema pede login numa tela própria. A credencial fica na variável `NGINX_H
 
 O passo a passo do domínio, da VPS, do tunnel e do pipeline está na pasta [configuracoes-realizadas](configuracoes-realizadas).
 
-## Como configurar localmente
+## Como rodar localmente
 
-Pré-Requisitos: Instalar Git e Docker.
+Só precisa de Git e Docker.
 
-```bash
-git clone https://github.com/OtavioMC/scripta-manent.git
-cd scripta-manent
-sh bin/gerar-env
-docker compose up -d --build
-docker compose run --rm php composer install
-```
+1. Clone o repositório
 
-Site em http://localhost:8080. O `bin/gerar-env` mostra no terminal o usuário e a senha do login local.
+   ```bash
+   git clone https://github.com/OtavioMC/scripta-manent.git
+   cd scripta-manent
+   ```
+
+2. Gere o `.env`. No final, o comando mostra o usuário e a senha para entrar no sistema. Anote a senha, porque ela não aparece de novo
+
+   ```bash
+   sh bin/gerar-env
+   ```
+
+3. Instale as dependências
+
+   ```bash
+   docker compose run --rm php composer install
+   ```
+
+4. Suba os contêineres
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+5. Abra http://localhost:8080 e entre com o usuário e a senha do passo 2
 
 Os scripts do banco só rodam com o volume vazio. Pra recriar o banco do zero, com os dados de exemplo
 
@@ -132,6 +151,14 @@ docker compose run --rm php composer testes
 ```
 
 ## Versões
+
+### 1.0.0
+
+Versão entregue.
+
+- Página 503 quando o banco está fora do ar
+- Decisões de arquitetura e tecnologia em `docs/decisoes.md`
+- Guia numerado para rodar localmente
 
 ### 0.9.0
 
