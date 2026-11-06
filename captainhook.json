@@ -38,8 +38,8 @@
       {
         "action": "\\CaptainHook\\App\\Hook\\Message\\Action\\Regex",
         "options": {
-          "regex": "/^(?!(?i:.*co-authored-by))(?!(?i:.*signed-off-by))(?!.*[\\x{1F000}-\\x{1FAFF}\\x{2600}-\\x{27BF}])(build|chore|ci|docs|feat|fix|refactor|style|test)(\\([a-z0-9-]+\\))?: \\p{Ll}/su",
-          "error": "A mensagem precisa seguir o formato tipo(escopo): descrição, com a descrição em minúscula, sem coautoria, sem assinatura e sem emoji."
+          "regex": "/^(?!.*[\\x{1F000}-\\x{1FAFF}\\x{2600}-\\x{27BF}])(build|chore|ci|docs|feat|fix|refactor|style|test)(\\([a-z0-9-]+\\))?: \\p{Ll}/su",
+          "error": "A mensagem precisa seguir o formato tipo(escopo): descrição, com a descrição em minúscula e sem emoji."
         }
       },
       {
