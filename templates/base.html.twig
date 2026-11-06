@@ -1,4 +1,12 @@
 {% set menuAtivo = block('menu_ativo') is defined ? block('menu_ativo')|trim : '' %}
+{% set colecao = block('colecao') is defined ? block('colecao')|trim : '' %}
+{% set versaoDaColecao = colecao ? versaoDe(colecao) : null %}
+{% set avisosDeAlteracao = {
+    livros: 'A lista de livros mudou desde que você abriu esta página.',
+    autores: 'A lista de autores mudou desde que você abriu esta página.',
+    assuntos: 'A lista de assuntos mudou desde que você abriu esta página.',
+    relatorio: 'Os dados do relatório mudaram desde que você abriu esta página.'
+} %}
 <!doctype html>
 <html lang="pt-BR" data-bs-theme="light">
 <head>
@@ -58,8 +66,24 @@
         {% block faixa_final %}{% endblock %}
     </main>
 
+    {% if versaoDaColecao is not null %}
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div class="toast" id="aviso-de-alteracao" role="status" aria-live="polite" aria-atomic="true"
+                 data-colecao="{{ colecao }}" data-versao="{{ versaoDaColecao }}">
+                <div class="toast-body">
+                    <p class="mb-2">{{ avisosDeAlteracao[colecao] }}</p>
+                    <button class="btn btn-sm btn-destaque" type="button" data-atualizar>Atualizar</button>
+                    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-dismiss="toast">Fechar</button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="/assets/js/alternar-tema.js"></script>
+    {% if versaoDaColecao is not null %}
+        <script type="module" src="/assets/js/avisar-alteracao.js"></script>
+    {% endif %}
     {% block scripts %}{% endblock %}
 </body>
 </html>

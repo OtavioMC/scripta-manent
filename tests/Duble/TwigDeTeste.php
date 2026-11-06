@@ -7,6 +7,7 @@ namespace ScriptaManent\Tests\Duble;
 use LogicException;
 use ScriptaManent\Http\TokenCsrf;
 use Twig\Environment;
+use Twig\TwigFunction;
 
 final class TwigDeTeste
 {
@@ -17,6 +18,7 @@ final class TwigDeTeste
             throw new LogicException('config/twig.php precisa devolver um Twig\Environment.');
         }
         $twig->addGlobal('csrf', new TokenCsrf(new SessaoEmMemoria()));
+        $twig->addFunction(new TwigFunction('versaoDe', static fn (string $colecao): ?int => null));
 
         return $twig;
     }

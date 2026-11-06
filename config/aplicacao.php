@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use Nyholm\Psr7\Factory\Psr17Factory;
+use Predis\Client;
 use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
+use ScriptaManent\Application\Cache\Medicoes;
+use ScriptaManent\Application\Cache\SemVersoes;
 use ScriptaManent\Application\Livro\CadastroDeLivros;
 use ScriptaManent\Http\Acesso\Credencial;
 use ScriptaManent\Http\Acesso\ExigeLogin;
@@ -34,9 +37,11 @@ use ScriptaManent\Http\Controller\RelatorioController;
 use ScriptaManent\Http\Controller\RelatorioPdfController;
 use ScriptaManent\Http\Controller\RestaurarDadosDeExemploController;
 use ScriptaManent\Http\Controller\VersaoController;
+use ScriptaManent\Http\Controller\VersoesController;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Roteador;
 use ScriptaManent\Http\Sessao;
+use ScriptaManent\Http\TempoDeResposta;
 use ScriptaManent\Http\TokenCsrf;
 use ScriptaManent\Http\TratadorDeErros;
 use ScriptaManent\Http\VerificadorDeCsrf;
@@ -47,9 +52,17 @@ use ScriptaManent\Infrastructure\Banco\RepositorioDeAssuntosPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAutoresPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeLivrosPdo;
 use ScriptaManent\Infrastructure\Banco\RestauradorDeDadosPdo;
+use ScriptaManent\Infrastructure\Cache\ArmazemRedis;
+use ScriptaManent\Infrastructure\Cache\FonteDoRelatorioEmCache;
+use ScriptaManent\Infrastructure\Cache\LeituraEmCache;
+use ScriptaManent\Infrastructure\Cache\RepositorioDeAssuntosEmCache;
+use ScriptaManent\Infrastructure\Cache\RepositorioDeAutoresEmCache;
+use ScriptaManent\Infrastructure\Cache\RepositorioDeLivrosEmCache;
+use ScriptaManent\Infrastructure\Cache\RestauradorDeDadosEmCache;
 use ScriptaManent\Infrastructure\Log\LogEmArquivo;
 use ScriptaManent\Infrastructure\Pdf\GeradorDePdfGotenberg;
 use Twig\Environment;
+use Twig\TwigFunction;
 
 return static function (Sessao $sessao): RequestHandlerInterface {
     $variavel = static function (string $nome): string {
@@ -72,6 +85,15 @@ return static function (Sessao $sessao): RequestHandlerInterface {
     $acesso = new SessaoDeAcesso($sessao, $relogio);
     $credencial = getenv('NGINX_HTPASSWD');
     $log = new LogEmArquivo('php://stderr');
+    $medicoes = new Medicoes();
+    $redis = getenv('REDIS_URL');
+    $cache = $redis === false || $redis === '' ? null : new LeituraEmCache(
+        new ArmazemRedis(new Client($redis . '?timeout=0.3&read_write_timeout=0.3')),
+        $medicoes,
+        $log,
+        300,
+    );
+    $versoes = $cache ?? new SemVersoes();
     $gotenberg = getenv('GOTENBERG_URL');
     $geradorDePdf = new GeradorDePdfGotenberg($gotenberg === false ? '' : $gotenberg, 20);
     $fusoDeExibicao = new DateTimeZone('America/Sao_Paulo');
@@ -90,6 +112,10 @@ return static function (Sessao $sessao): RequestHandlerInterface {
     }
     $tokenCsrf = new TokenCsrf($sessao);
     $twig->addGlobal('csrf', $tokenCsrf);
+    $twig->addFunction(new TwigFunction(
+        'versaoDe',
+        static fn (string $colecao): ?int => $versoes->atuais()[$colecao] ?? null,
+    ));
     $visao = new Visao($twig, $respostas);
     $paginaDeErro = new PaginaDeErro($visao);
     $protegido = static fn (RequestHandlerInterface $acao): RequestHandlerInterface => new VerificadorDeCsrf(
@@ -99,17 +125,28 @@ return static function (Sessao $sessao): RequestHandlerInterface {
         $log,
     );
     $fonteDoRelatorio = new FonteDoRelatorioPdo($conexao);
-    $autores = new CadastroDeAutores(new RepositorioDeAutoresPdo($conexao));
+    $repositorioDeAutores = new RepositorioDeAutoresPdo($conexao);
+    $repositorioDeAssuntos = new RepositorioDeAssuntosPdo($conexao);
+    $repositorioDeLivros = new RepositorioDeLivrosPdo($conexao);
+    $restaurador = new RestauradorDeDadosPdo($conexao, __DIR__ . '/../banco/003-dados-exemplo.sql');
+    if ($cache !== null) {
+        $fonteDoRelatorio = new FonteDoRelatorioEmCache($fonteDoRelatorio, $cache);
+        $repositorioDeAutores = new RepositorioDeAutoresEmCache($repositorioDeAutores, $cache);
+        $repositorioDeAssuntos = new RepositorioDeAssuntosEmCache($repositorioDeAssuntos, $cache);
+        $repositorioDeLivros = new RepositorioDeLivrosEmCache($repositorioDeLivros, $cache);
+        $restaurador = new RestauradorDeDadosEmCache($restaurador, $cache);
+    }
+    $autores = new CadastroDeAutores($repositorioDeAutores);
     $formularioDeAutor = new FormularioDeAutorApresentador($visao, $paginaDeErro);
     $abrirAutor = new FormularioDeAutorController($formularioDeAutor, $autores);
     $salvarAutor = new SalvarAutorController($formularioDeAutor, $autores, $sessao, $visao);
     $excluirAutor = new ExcluirAutorController($formularioDeAutor, $autores, $sessao, $visao);
-    $assuntos = new CadastroDeAssuntos(new RepositorioDeAssuntosPdo($conexao));
+    $assuntos = new CadastroDeAssuntos($repositorioDeAssuntos);
     $formularioDeAssunto = new FormularioDeAssuntoApresentador($visao, $paginaDeErro);
     $abrirAssunto = new FormularioDeAssuntoController($formularioDeAssunto, $assuntos);
     $salvarAssunto = new SalvarAssuntoController($formularioDeAssunto, $assuntos, $sessao, $visao);
     $excluirAssunto = new ExcluirAssuntoController($formularioDeAssunto, $assuntos, $sessao, $visao);
-    $livros = new CadastroDeLivros(new RepositorioDeLivrosPdo($conexao));
+    $livros = new CadastroDeLivros($repositorioDeLivros);
     $formularioDeLivro = new FormularioDeLivroApresentador($visao, $paginaDeErro, $autores, $assuntos);
     $abrirLivro = new FormularioDeLivroController($formularioDeLivro, $livros);
     $salvarLivro = new SalvarLivroController($formularioDeLivro, $livros, $sessao, $visao);
@@ -118,6 +155,7 @@ return static function (Sessao $sessao): RequestHandlerInterface {
     $roteador = new Roteador($paginaDeErro, [
         ['GET', '/', new InicioController($visao)],
         ['GET', '/versao', new VersaoController($respostas, $versao === false ? 'dev' : $versao)],
+        ['GET', '/versoes', new VersoesController($respostas, $versoes)],
         ['GET', '/login', new TelaDeLoginController($visao, $acesso, $sessao)],
         ['POST', '/login', $protegido(new EntrarController(
             $visao,
@@ -129,7 +167,7 @@ return static function (Sessao $sessao): RequestHandlerInterface {
         ))],
         ['POST', '/sair', $protegido(new SairController($visao, $acesso, $log))],
         ['POST', '/dados-de-exemplo/restaurar', $protegido(new RestaurarDadosDeExemploController(
-            new RestauradorDeDadosPdo($conexao, __DIR__ . '/../banco/003-dados-exemplo.sql'),
+            $restaurador,
             $sessao,
             $visao,
             $log,
@@ -174,5 +212,8 @@ return static function (Sessao $sessao): RequestHandlerInterface {
         ['POST', '/assuntos/{codigo:\d+}/excluir', $protegido($excluirAssunto)],
     ]);
 
-    return new TratadorDeErros(new ExigeLogin($roteador, $acesso, $sessao, $visao), $paginaDeErro, $log);
+    return new TempoDeResposta(
+        new TratadorDeErros(new ExigeLogin($roteador, $acesso, $sessao, $visao), $paginaDeErro, $log),
+        $medicoes,
+    );
 };
