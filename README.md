@@ -54,6 +54,17 @@ No front não utilizei framework de componentização JavaScript. Foi utilizado 
 
 Os formulários já validam no navegador, com os atributos do próprio HTML e os mesmos limites do domínio, evitando que sejam enviadas requisições incorretas a mais pro servidor desnecessariamente.
 
+## Banco
+
+As tabelas seguem o modelo à risca, com os mesmos nomes, tipos, chaves e índices. Os únicos acréscimos são a coluna `Valor` no livro e a view do relatório. Tudo nasce dos scripts da pasta `banco/`, rodados no MySQL durante a subida.
+
+- `000-usuario-aplicacao.sh` cria o usuário da aplicação, que lê e grava dados mas não cria nem altera tabelas
+- `001-tabelas.sql` cria as tabelas, com chaves estrangeiras sem cascata, então autor ou assunto com livro vinculado não pode ser excluído
+- `002-view-relatorio.sql` cria a `vw_livros_por_autor`, com uma linha por autor e livro, incluindo os livros sem autor
+- `003-dados-exemplo.sql` carrega 12 livros de exemplo, com casos de coautoria, livro sem autor e livro sem assunto
+
+Um teste de integração compara o banco real com o modelo pelo `information_schema`. Esse teste precisa ser atualizado para qualquer adição ou remoção de tabelas no banco, do contrário o CI barrará a alteração.
+
 ## Testes
 
 TDD com PHPUnit, em três níveis.
@@ -86,6 +97,13 @@ docker compose run --rm php composer install
 
 Site em http://localhost:8080.
 
+Os scripts do banco só rodam com o volume vazio. Pra recriar o banco do zero, com os dados de exemplo
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
 Verificações
 
 ```bash
@@ -97,6 +115,16 @@ docker compose run --rm php composer testes
 ```
 
 ## Versões
+
+### 0.2.0
+
+Cria o banco de dados.
+
+- Adiciona o MySQL 8.4 no Docker, no desenvolvimento e na produção
+- Cria as tabelas seguindo o modelo, com um teste que compara o banco real com ele
+- Cria a view do relatório, agrupada por autor e incluindo os livros sem autor
+- Carrega dados de exemplo para a demonstração
+- Separa um usuário para a aplicação, sem permissão para criar ou alterar tabelas
 
 ### 0.1.0
 

@@ -103,3 +103,59 @@
    docker compose down -v
    docker compose up -d
    ```
+
+8. Criei os scripts que o MySQL roda em ordem na primeira subida
+
+   - `banco/001-tabelas.sql`, com as tabelas, chaves, índices e `AUTO_INCREMENT`
+   - `banco/002-view-relatorio.sql`, com a `vw_livros_por_autor`
+   - `banco/003-dados-exemplo.sql`, começando com `SET NAMES utf8mb4;` pra não corromper os acentos
+
+9. No `compose.prod.yaml` acrescentei o MySQL e passei os dados de conexão pro `php`
+
+   ```yaml
+   php:
+     environment:
+       BANCO_HOST: mysql
+       BANCO_NOME: scripta_manent
+       BANCO_USUARIO: aplicacao
+       BANCO_SENHA: ${BANCO_SENHA:?defina BANCO_SENHA no .env}
+     depends_on:
+       mysql:
+         condition: service_healthy
+
+   mysql:
+     image: mysql:8.4.13
+     restart: unless-stopped
+     environment:
+       MYSQL_ROOT_PASSWORD: ${BANCO_SENHA_ROOT:?defina BANCO_SENHA_ROOT no .env}
+       MYSQL_DATABASE: scripta_manent
+       BANCO_SENHA: ${BANCO_SENHA:?defina BANCO_SENHA no .env}
+     volumes:
+       - mysql:/var/lib/mysql
+       - ./banco:/docker-entrypoint-initdb.d:ro
+     healthcheck:
+       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+       interval: 2s
+       timeout: 5s
+       retries: 60
+     mem_limit: 1g
+
+   volumes:
+     mysql:
+   ```
+
+10. Na VPS, antes do deploy, gerei as senhas do banco no `.env`
+
+    ```bash
+    cd ~/scripta-manent
+    senha() { LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32; }
+    printf 'BANCO_SENHA_ROOT=%s\nBANCO_SENHA=%s\n' "$(senha)" "$(senha)" >> .env
+    grep -c '^BANCO_' .env
+    ```
+
+11. Depois de aprovar o deploy, conferi o banco na VPS
+
+    ```bash
+    docker compose -f compose.prod.yaml ps
+    docker compose -f compose.prod.yaml exec -T mysql sh -c 'mysql -uaplicacao -p"$BANCO_SENHA" -N scripta_manent -e "SELECT COUNT(*) FROM Livro; SELECT COUNT(*) FROM vw_livros_por_autor"' 2>/dev/null
+    ```
