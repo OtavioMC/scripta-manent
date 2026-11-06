@@ -116,6 +116,13 @@ docker compose run --rm php composer testes
 
 ## Versões
 
+### 0.5.0
+
+Adiciona a restauração dos dados de exemplo.
+
+- Botão "Restaurar dados de exemplo" na tela inicial, com confirmação, que apaga os cadastros e recarrega o script `banco/003-dados-exemplo.sql` numa transação
+- Cada restauração fica registrada no log de auditoria, com a origem da requisição
+
 ### 0.4.0
 
 Cria os cadastros de livros, autores e assuntos.
