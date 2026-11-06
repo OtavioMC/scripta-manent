@@ -116,6 +116,15 @@ docker compose run --rm php composer testes
 
 ## Versões
 
+### 0.6.0
+
+Cria o relatório de livros por autor.
+
+- Relatório na tela, lido da view `vw_livros_por_autor`, com um grupo por autor, os livros sem autor num grupo próprio e subtotal em cada grupo
+- Total geral contando cada livro uma vez, mesmo com mais de um autor
+- Seção "Livros com mais de um autor", agrupada pelo conjunto completo de autores
+- Botão "Baixar PDF", gerado pelo Gotenberg a partir do mesmo template da tela; se o Gotenberg estiver fora do ar, a prévia continua e aparece um aviso
+
 ### 0.5.0
 
 Adiciona a restauração dos dados de exemplo.

@@ -243,3 +243,25 @@
    ```bash
    docker compose up -d --force-recreate web
    ```
+
+9. Adicionei o Gotenberg, que gera o PDF do relatório, no `compose.yaml` e no `compose.prod.yaml`, só na rede interna
+
+   ```yaml
+   gotenberg:
+     image: gotenberg/gotenberg:8.38.1
+     command:
+       - gotenberg
+       - --api-timeout=20s
+       - --chromium-disable-javascript=true
+       - --chromium-allow-list=^file:///tmp/.*
+   ```
+
+   No serviço `php`, a variável que liga a geração de PDF e a dependência do contêiner novo
+
+   ```yaml
+   GOTENBERG_URL: http://gotenberg:3000
+   ```
+
+   ```bash
+   docker compose up -d
+   ```
