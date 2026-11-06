@@ -79,6 +79,60 @@ final class ViewRelatorioTest extends TestCase
         self::assertSame([['Assuntos' => 'Aventura, Fantasia, Romance']], $linhas);
     }
 
+    public function testLivroSemAutorApareceComAutorVazio(): void
+    {
+        $livro = $this->livro('Cantigas do Vale');
+
+        $linhas = ConexaoDeTeste::consultar(
+            'SELECT CodAu, Autor, Titulo FROM vw_livros_por_autor WHERE Codl = :livro',
+            ['livro' => $livro],
+        );
+
+        self::assertSame([['CodAu' => null, 'Autor' => null, 'Titulo' => 'Cantigas do Vale']], $linhas);
+    }
+
+    public function testLivroSemAssuntoApareceComAssuntosVazios(): void
+    {
+        $livro = $this->livro('Memórias Póstumas');
+        $this->vincularAutor($livro, $this->autor('Machado de Assis'));
+
+        $linhas = ConexaoDeTeste::consultar('SELECT Assuntos FROM vw_livros_por_autor WHERE Codl = :livro', [
+            'livro' => $livro,
+        ]);
+
+        self::assertSame([['Assuntos' => null]], $linhas);
+    }
+
+    public function testVariosAssuntosNaoMultiplicamAsLinhasDeVariosAutores(): void
+    {
+        $livro = $this->livro('Manual do Pequeno Jardim');
+        $this->vincularAutor($livro, $this->autor('Otília Brandão'));
+        $this->vincularAutor($livro, $this->autor('Jorge Vasques'));
+        $this->vincularAssunto($livro, $this->assunto('Botânica'));
+        $this->vincularAssunto($livro, $this->assunto('Jardinagem'));
+
+        $linhas = ConexaoDeTeste::consultar(
+            'SELECT Autor, Assuntos FROM vw_livros_por_autor WHERE Codl = :livro ORDER BY Autor',
+            ['livro' => $livro],
+        );
+
+        self::assertSame([
+            ['Autor' => 'Jorge Vasques', 'Assuntos' => 'Botânica, Jardinagem'],
+            ['Autor' => 'Otília Brandão', 'Assuntos' => 'Botânica, Jardinagem'],
+        ], $linhas);
+    }
+
+    public function testAutorSemLivrosNaoAparece(): void
+    {
+        $autor = $this->autor('Beatriz Lacerda');
+
+        $linhas = ConexaoDeTeste::consultar('SELECT Codl FROM vw_livros_por_autor WHERE CodAu = :autor', [
+            'autor' => $autor,
+        ]);
+
+        self::assertSame([], $linhas);
+    }
+
     private function livro(string $titulo): int
     {
         return ConexaoDeTeste::inserir(
