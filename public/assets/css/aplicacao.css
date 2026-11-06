@@ -411,6 +411,19 @@ body {
     width: 14%;
 }
 
+.relatorio-impresso {
+    background: #ffffff;
+}
+
+.relatorio-impresso .tabela-relatorio {
+    min-width: 0;
+}
+
+.relatorio-impresso .grupo-relatorio,
+.relatorio-impresso .cartao-resumo {
+    break-inside: avoid;
+}
+
 .tabela-relatorio tfoot th,
 .tabela-relatorio tfoot td {
     border-bottom: 0;

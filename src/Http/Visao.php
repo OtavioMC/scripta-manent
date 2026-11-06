@@ -23,9 +23,17 @@ final readonly class Visao
     {
         $resposta = $this->respostas->createResponse($status)
             ->withHeader('Content-Type', 'text/html; charset=utf-8');
-        $resposta->getBody()->write($this->twig->render($template, $dados));
+        $resposta->getBody()->write($this->renderizar($template, $dados));
 
         return $resposta;
+    }
+
+    /**
+     * @param array<string, mixed> $dados
+     */
+    public function renderizar(string $template, array $dados = []): string
+    {
+        return $this->twig->render($template, $dados);
     }
 
     public function redirecionar(string $endereco): ResponseInterface

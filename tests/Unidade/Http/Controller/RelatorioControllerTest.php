@@ -13,6 +13,8 @@ use ScriptaManent\Domain\Livro\Dinheiro;
 use ScriptaManent\Domain\Relatorio\LinhaDoRelatorio;
 use ScriptaManent\Http\Controller\RelatorioController;
 use ScriptaManent\Http\Visao;
+use ScriptaManent\Infrastructure\Pdf\GeradorDePdfGotenberg;
+use ScriptaManent\Tests\Duble\SessaoEmMemoria;
 use Twig\Environment;
 
 final class RelatorioControllerTest extends TestCase
@@ -61,6 +63,8 @@ final class RelatorioControllerTest extends TestCase
             new Visao($twig, new Psr17Factory()),
             $fonte,
             new DateTimeZone('America/Sao_Paulo'),
+            new GeradorDePdfGotenberg('', 5),
+            new SessaoEmMemoria(),
         );
 
         return (string) $controller->handle(new ServerRequest('GET', '/relatorio'))->getBody();

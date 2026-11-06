@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <title>Relatório de livros por autor | Scripta Manent</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="aplicacao.css">
+</head>
+<body class="relatorio-impresso">
+    <main class="container-fluid px-0">
+        <header class="mb-4">
+            <p class="marca mb-1">Scripta Manent</p>
+            <h1 class="titulo-secao mb-1">Relatório de livros por autor</h1>
+            <p class="texto-suave mb-0">Gerado em {{ geradoEm }}, horário de Brasília.</p>
+        </header>
+
+        {% include 'relatorio/_conteudo.html.twig' %}
+    </main>
+</body>
+</html>

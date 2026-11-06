@@ -24,6 +24,7 @@ use ScriptaManent\Http\Controller\Livro\FormularioDeLivroController;
 use ScriptaManent\Http\Controller\Livro\ListaDeLivrosController;
 use ScriptaManent\Http\Controller\Livro\SalvarLivroController;
 use ScriptaManent\Http\Controller\RelatorioController;
+use ScriptaManent\Http\Controller\RelatorioPdfController;
 use ScriptaManent\Http\Controller\RestaurarDadosDeExemploController;
 use ScriptaManent\Http\Controller\VersaoController;
 use ScriptaManent\Http\PaginaDeErro;
@@ -38,6 +39,7 @@ use ScriptaManent\Infrastructure\Banco\RepositorioDeAutoresPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeLivrosPdo;
 use ScriptaManent\Infrastructure\Banco\RestauradorDeDadosPdo;
 use ScriptaManent\Infrastructure\Log\LogEmArquivo;
+use ScriptaManent\Infrastructure\Pdf\GeradorDePdfGotenberg;
 use Twig\Environment;
 
 return (static function (): RequestHandlerInterface {
@@ -59,6 +61,17 @@ return (static function (): RequestHandlerInterface {
     ));
     $sessao = new SessaoNativa();
     $log = new LogEmArquivo('php://stderr');
+    $gotenberg = getenv('GOTENBERG_URL');
+    $geradorDePdf = new GeradorDePdfGotenberg($gotenberg === false ? '' : $gotenberg, 20);
+    $fusoDeExibicao = new DateTimeZone('America/Sao_Paulo');
+    $lerArquivo = static function (string $caminho): string {
+        $conteudo = file_get_contents($caminho);
+        if ($conteudo === false) {
+            throw new RuntimeException(sprintf('O arquivo %s não pôde ser lido.', $caminho));
+        }
+
+        return $conteudo;
+    };
 
     $twig = require __DIR__ . '/twig.php';
     if (!$twig instanceof Environment) {
@@ -66,6 +79,7 @@ return (static function (): RequestHandlerInterface {
     }
     $visao = new Visao($twig, $respostas);
     $paginaDeErro = new PaginaDeErro($visao);
+    $fonteDoRelatorio = new FonteDoRelatorioPdo($conexao);
     $autores = new CadastroDeAutores(new RepositorioDeAutoresPdo($conexao));
     $formularioDeAutor = new FormularioDeAutorApresentador($visao, $paginaDeErro);
     $abrirAutor = new FormularioDeAutorController($formularioDeAutor, $autores);
@@ -93,8 +107,23 @@ return (static function (): RequestHandlerInterface {
         )],
         ['GET', '/relatorio', new RelatorioController(
             $visao,
-            new FonteDoRelatorioPdo($conexao),
-            new DateTimeZone('America/Sao_Paulo'),
+            $fonteDoRelatorio,
+            $fusoDeExibicao,
+            $geradorDePdf,
+            $sessao,
+        )],
+        ['GET', '/relatorio/pdf', new RelatorioPdfController(
+            $visao,
+            $fonteDoRelatorio,
+            $geradorDePdf,
+            $respostas,
+            $sessao,
+            $log,
+            $fusoDeExibicao,
+            [
+                'bootstrap.min.css' => $lerArquivo(__DIR__ . '/../vendor/twbs/bootstrap/dist/css/bootstrap.min.css'),
+                'aplicacao.css' => $lerArquivo(__DIR__ . '/../public/assets/css/aplicacao.css'),
+            ],
         )],
         ['GET', '/livros', new ListaDeLivrosController($visao, $livros, $sessao, $formularioDeLivro)],
         ['GET', '/livros/novo', $abrirLivro],

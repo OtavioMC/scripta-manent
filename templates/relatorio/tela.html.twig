@@ -10,7 +10,19 @@
             <h1 class="titulo-secao mb-1">Relatório de livros por autor</h1>
             <p class="texto-suave mb-0">Gerado em {{ geradoEm }}, horário de Brasília.</p>
         </div>
+        {% if pdfLigado %}
+            <a class="btn btn-destaque" href="/relatorio/pdf">Baixar PDF</a>
+        {% else %}
+            <div class="text-sm-end">
+                <button class="btn btn-destaque" type="button" disabled aria-describedby="pdf-desligado">Baixar PDF</button>
+                <p class="form-text mb-0" id="pdf-desligado">O PDF não está disponível neste ambiente. A prévia abaixo tem os mesmos dados.</p>
+            </div>
+        {% endif %}
     </div>
+
+    {% if aviso %}
+        <div class="alert alert-warning" role="status">{{ aviso }}</div>
+    {% endif %}
 
     {% include 'relatorio/_conteudo.html.twig' %}
 {% endblock %}
