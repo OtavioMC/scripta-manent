@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block titulo %}Início{% endblock %}
+
+{% block faixa %}
+    <div class="carousel slide carousel-fade vitrine" id="vitrine" data-bs-ride="carousel"
+         data-bs-interval="6000" aria-roledescription="carrossel" aria-label="Telas do sistema">
+        <div class="carousel-indicators">
+            {% for item in menu %}
+                <button type="button" data-bs-target="#vitrine" data-bs-slide-to="{{ loop.index0 }}"
+                        aria-label="{{ item.rotulo }}"
+                        {% if loop.first %}class="active" aria-current="true"{% endif %}></button>
+            {% endfor %}
+        </div>
+
+        <div class="carousel-inner">
+            {% for item in menu %}
+                <div class="carousel-item{% if loop.first %} active{% endif %}" role="group"
+                     aria-roledescription="slide" aria-label="{{ loop.index }} de {{ menu|length }}">
+                    <img class="d-block w-100" src="{{ item.imagem }}"
+                         srcset="{{ item.imagem }} 1280w, {{ item.imagemGrande }} 1920w" sizes="100vw"
+                         alt="{{ item.textoAlternativo }}" width="1920" height="1280"
+                         {% if not loop.first %}loading="lazy"{% endif %}>
+                    <div class="carousel-caption">
+                        <div class="container">
+                            <span class="etiqueta">{{ item.rotulo }}</span>
+                            <p class="vitrine-chamada">{{ item.chamada }}</p>
+                            <p class="vitrine-descricao d-none d-sm-block">{{ item.descricao }}</p>
+                            <a class="btn btn-destaque" href="{{ item.endereco }}">Abrir {{ item.rotulo|lower }}</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#vitrine" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#vitrine" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Próximo</span>
+        </button>
+        <button class="btn btn-sm rounded-pill vitrine-pausa" type="button" id="pausar-vitrine">Pausar</button>
+    </div>
+{% endblock %}
+
+{% block conteudo %}
+    <h1 class="visually-hidden">Acervo de livros</h1>
+
+    <section aria-labelledby="titulo-telas">
+        <h2 class="titulo-secao mb-1" id="titulo-telas">Telas</h2>
+        <p class="texto-suave mb-4">Escolha o que você quer cadastrar ou consultar.</p>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3 g-lg-4">
+            {% for item in menu %}
+                <div class="col">
+                    <a class="card cartao-menu h-100 text-decoration-none" href="{{ item.endereco }}">
+                        <div class="card-body">
+                            <span class="cartao-numero" aria-hidden="true">0{{ loop.index }}</span>
+                            <h3 class="card-title h5">{{ item.rotulo }}</h3>
+                            <p class="card-text texto-suave">{{ item.descricao }}</p>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}
+
+{% block faixa_final %}
+    <section class="sobre" aria-labelledby="titulo-sobre">
+        <div class="container py-5">
+            <div class="row g-4 g-lg-5 align-items-center">
+                <div class="col-lg-5">
+                    <h2 class="titulo-secao mb-3" id="titulo-sobre">O que é o Scripta Manent?</h2>
+                    <p class="sobre-citacao mb-0" lang="la">“Verba volant, scripta manent”</p>
+                </div>
+                <div class="col-lg-7">
+                    <p>
+                        O Scripta Manent é um sistema de cadastro de livros. Cada livro guarda título, editora,
+                        edição, ano de publicação e valor, e pode ter vários autores e vários assuntos.
+                    </p>
+                    <p>
+                        O relatório agrupa os livros por autor, com a quantidade e o valor de cada grupo, e pode ser
+                        visto na tela ou baixado em PDF.
+                    </p>
+                    <p class="mb-0">
+                        O nome vem do provérbio latino que diz que as palavras voam e os escritos permanecem.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/assets/js/pausar-vitrine.js"></script>
+{% endblock %}

@@ -26,6 +26,7 @@ RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
 COPY --from=dependencias /app/vendor/ vendor/
 COPY config/ config/
 COPY public/ public/
+COPY templates/ templates/
 COPY src/ src/
 USER www-data
 

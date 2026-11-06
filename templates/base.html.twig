@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#7f1d1d">
+    <title>{% block titulo %}{% endblock %} | Scripta Manent</title>
+    <script src="/assets/js/aplicar-tema.js"></script>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/aplicacao.css">
+</head>
+<body>
+    <a class="visually-hidden-focusable" href="#conteudo">Pular para o conteúdo</a>
+
+    <nav class="navbar navbar-expand-md navbar-aplicacao sticky-top" aria-label="Menu principal">
+        <div class="container">
+            <a class="navbar-brand marca" href="/">Scripta Manent</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
+                    aria-controls="menu" aria-expanded="false" aria-label="Abrir o menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menu">
+                <ul class="navbar-nav me-auto">
+                    {% for item in menu %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ item.endereco }}">{{ item.rotulo }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p class="navbar-text proverbio d-md-none d-lg-block mb-0 me-lg-4" lang="la">
+                    <span class="proverbio-latim">“Verba volant, scripta manent”</span>
+                    <span class="proverbio-traducao" lang="pt-BR">As palavras voam, os escritos permanecem.</span>
+                </p>
+                <button class="btn btn-outline-secondary btn-sm rounded-pill my-2 my-md-0" type="button"
+                        id="alternar-tema">Tema escuro</button>
+            </div>
+        </div>
+    </nav>
+
+    <main id="conteudo">
+        {% block faixa %}{% endblock %}
+        <div class="container py-4 py-lg-5">
+            {% block conteudo %}{% endblock %}
+        </div>
+        {% block faixa_final %}{% endblock %}
+    </main>
+
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="/assets/js/alternar-tema.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
