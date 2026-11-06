@@ -17,6 +17,7 @@ final readonly class ListaDeAssuntosController implements RequestHandlerInterfac
         private Visao $visao,
         private CadastroDeAssuntos $cadastro,
         private Sessao $sessao,
+        private TelaDeFormularioDeAssunto $formulario,
     ) {
     }
 
@@ -28,6 +29,7 @@ final readonly class ListaDeAssuntosController implements RequestHandlerInterfac
             'assuntos' => $this->cadastro->listar(),
             'aviso' => is_string($aviso) ? $aviso : null,
             'bloqueio' => $this->bloqueio($this->sessao->retirar('bloqueio')),
+            'formulario' => $this->formulario->dados(null, ''),
         ]);
     }
 

@@ -1,12 +1,49 @@
-{% macro texto(nome, rotulo, valor, erro, maximo, mensagemObrigatorio) %}
+{% macro campo(nome, rotulo, valor, erro, atributos, mensagemObrigatorio, mensagemFormato, ajuda) %}
     <div class="mb-4">
         <label class="form-label" for="campo-{{ nome }}">{{ rotulo }}</label>
-        <input class="form-control{{ erro ? ' is-invalid' }}" type="text" id="campo-{{ nome }}" name="{{ nome }}"
-               value="{{ valor }}" maxlength="{{ maximo }}" required
+        <input class="form-control{{ erro ? ' is-invalid' }}" id="campo-{{ nome }}" name="{{ nome }}" value="{{ valor }}"
+               {%- for atributo, conteudo in atributos %} {{ atributo }}="{{ conteudo }}"{% endfor %} required
                aria-describedby="ajuda-{{ nome }} erro-{{ nome }}"{% if erro %} aria-invalid="true"{% endif %}>
-        <div class="form-text" id="ajuda-{{ nome }}">Até {{ maximo }} caracteres.</div>
-        <div class="invalid-feedback" id="erro-{{ nome }}" data-mensagem-obrigatorio="{{ mensagemObrigatorio }}">
+        <div class="form-text" id="ajuda-{{ nome }}">{{ ajuda }}</div>
+        <div class="invalid-feedback" id="erro-{{ nome }}" data-mensagem-obrigatorio="{{ mensagemObrigatorio }}"
+             data-mensagem-formato="{{ mensagemFormato }}">
             {{- erro ?? mensagemObrigatorio -}}
         </div>
+    </div>
+{% endmacro %}
+
+{% macro texto(nome, rotulo, valor, erro, maximo, mensagemObrigatorio) %}
+    {% import _self as formulario %}
+    {{ formulario.campo(nome, rotulo, valor, erro, {type: 'text', maxlength: maximo}, mensagemObrigatorio,
+        mensagemObrigatorio, 'Até ' ~ maximo ~ ' caracteres.') }}
+{% endmacro %}
+
+{% macro caixas(nome, rotulo, opcoes, marcados, vazio, enderecoDoCadastro) %}
+    <fieldset class="mb-4">
+        <legend class="form-label fs-6 mb-2">{{ rotulo }}</legend>
+        {% if opcoes is empty %}
+            <p class="texto-suave mb-0">{{ vazio }} <a href="{{ enderecoDoCadastro }}">Abrir o cadastro</a></p>
+        {% else %}
+            <div class="caixas-de-selecao">
+                {% for opcao in opcoes %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="{{ nome }}[]" value="{{ opcao.codigo }}"
+                               id="{{ nome }}-{{ opcao.codigo }}"{% if opcao.codigo in marcados %} checked{% endif %}>
+                        <label class="form-check-label" for="{{ nome }}-{{ opcao.codigo }}">{{ opcao.rotulo }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </fieldset>
+{% endmacro %}
+
+{% macro botoes(rotulo, enderecoDeVolta, emModal) %}
+    <div class="d-flex flex-column flex-sm-row gap-2">
+        <button class="btn btn-destaque" type="submit">{{ rotulo }}</button>
+        {% if emModal %}
+            <button class="btn btn-outline-primary" type="button" data-bs-dismiss="modal">Cancelar</button>
+        {% else %}
+            <a class="btn btn-outline-primary" href="{{ enderecoDeVolta }}">Cancelar</a>
+        {% endif %}
     </div>
 {% endmacro %}

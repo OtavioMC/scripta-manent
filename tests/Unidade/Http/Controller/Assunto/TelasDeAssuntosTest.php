@@ -51,6 +51,21 @@ final class TelasDeAssuntosTest extends TestCase
         self::assertStringContainsString(sprintf('href="/assuntos/%d/editar"', (int) $assunto->codigo), $pagina);
     }
 
+    public function testListaTrazOFormularioEmModalEOsDadosParaEditar(): void
+    {
+        $assunto = $this->repositorio->inserir(Assunto::novo('Poesia'));
+
+        $pagina = (string) $this->lista()->getBody();
+
+        self::assertStringContainsString('id="modal-formulario"', $pagina);
+        self::assertMatchesRegularExpression(
+            sprintf('#<input [^>]*name="descricao"[^>]*maxlength="%d"#', Assunto::DESCRICAO_MAXIMA),
+            $pagina,
+        );
+        self::assertStringContainsString(sprintf('data-acao="/assuntos/%d"', (int) $assunto->codigo), $pagina);
+        self::assertStringContainsString('data-campos="{&quot;descricao&quot;:&quot;Poesia&quot;}"', $pagina);
+    }
+
     public function testListaVaziaDizComoComecar(): void
     {
         $pagina = (string) $this->lista()->getBody();
@@ -167,7 +182,7 @@ final class TelasDeAssuntosTest extends TestCase
 
     private function lista(): ResponseInterface
     {
-        return (new ListaDeAssuntosController($this->visao, $this->cadastro, $this->sessao))
+        return (new ListaDeAssuntosController($this->visao, $this->cadastro, $this->sessao, $this->formulario))
             ->handle(new ServerRequest('GET', '/assuntos'));
     }
 

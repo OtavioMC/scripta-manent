@@ -22,14 +22,23 @@ final readonly class TelaDeFormularioDeAutor
      */
     public function responder(?int $codigo, string $nome, array $erros = [], int $status = 200): ResponseInterface
     {
-        return $this->visao->responder('autores/formulario.html.twig', [
+        return $this->visao->responder('autores/formulario.html.twig', $this->dados($codigo, $nome, $erros), $status);
+    }
+
+    /**
+     * @param array<string, string> $erros
+     * @return array<string, mixed>
+     */
+    public function dados(?int $codigo, string $nome, array $erros = []): array
+    {
+        return [
             'editando' => $codigo !== null,
             'acao' => $codigo === null ? '/autores' : sprintf('/autores/%d', $codigo),
             'nome' => $nome,
             'erros' => $erros,
             'nomeMaximo' => Autor::NOME_MAXIMO,
             'nomeObrigatorio' => Autor::NOME_OBRIGATORIO,
-        ], $status);
+        ];
     }
 
     public function naoEncontrado(int $codigo): ResponseInterface

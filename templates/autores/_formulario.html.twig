@@ -1,0 +1,6 @@
+{% import 'macros/formulario.html.twig' as formulario %}
+
+<form method="post" action="{{ acao }}" novalidate data-validar>
+    {{ formulario.texto('nome', 'Nome', nome, erros.nome ?? null, nomeMaximo, nomeObrigatorio) }}
+    {{ formulario.botoes('Salvar autor', '/autores', emModal) }}
+</form>

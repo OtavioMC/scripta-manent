@@ -51,6 +51,21 @@ final class TelasDeAutoresTest extends TestCase
         self::assertStringContainsString(sprintf('href="/autores/%d/editar"', (int) $autor->codigo), $pagina);
     }
 
+    public function testListaTrazOFormularioEmModalEOsDadosParaEditar(): void
+    {
+        $autor = $this->repositorio->inserir(Autor::novo('Clarice Lispector'));
+
+        $pagina = (string) $this->lista()->getBody();
+
+        self::assertStringContainsString('id="modal-formulario"', $pagina);
+        self::assertMatchesRegularExpression(
+            sprintf('#<input [^>]*name="nome"[^>]*maxlength="%d"#', Autor::NOME_MAXIMO),
+            $pagina,
+        );
+        self::assertStringContainsString(sprintf('data-acao="/autores/%d"', (int) $autor->codigo), $pagina);
+        self::assertStringContainsString('data-campos="{&quot;nome&quot;:&quot;Clarice Lispector&quot;}"', $pagina);
+    }
+
     public function testListaVaziaDizComoComecar(): void
     {
         $pagina = (string) $this->lista()->getBody();
@@ -167,7 +182,7 @@ final class TelasDeAutoresTest extends TestCase
 
     private function lista(): ResponseInterface
     {
-        return (new ListaDeAutoresController($this->visao, $this->cadastro, $this->sessao))
+        return (new ListaDeAutoresController($this->visao, $this->cadastro, $this->sessao, $this->formulario))
             ->handle(new ServerRequest('GET', '/autores'));
     }
 

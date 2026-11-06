@@ -8,7 +8,8 @@
             <h1 class="titulo-secao mb-1">Autores</h1>
             <p class="texto-suave mb-0">Autores que podem ser vinculados aos livros, em ordem alfabética.</p>
         </div>
-        <a class="btn btn-destaque" href="/autores/novo">Cadastrar autor</a>
+        <a class="btn btn-destaque" href="/autores/novo" data-abrir-formulario data-acao="/autores"
+           data-titulo="Cadastrar autor">Cadastrar autor</a>
     </div>
 
     {% if aviso %}
@@ -19,7 +20,8 @@
         <div class="estado-vazio text-center">
             <p class="fw-semibold mb-1">Nenhum autor cadastrado.</p>
             <p class="texto-suave mb-3">Cadastre o primeiro autor para poder vinculá-lo aos livros.</p>
-            <a class="btn btn-destaque" href="/autores/novo">Cadastrar autor</a>
+            <a class="btn btn-destaque" href="/autores/novo" data-abrir-formulario data-acao="/autores"
+               data-titulo="Cadastrar autor">Cadastrar autor</a>
         </div>
     {% else %}
         <div class="cartao-tabela">
@@ -38,7 +40,9 @@
                                 <td>{{ autor.nome }}</td>
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2">
-                                        <a class="btn btn-sm btn-outline-primary" href="/autores/{{ autor.codigo }}/editar">
+                                        <a class="btn btn-sm btn-outline-primary" href="/autores/{{ autor.codigo }}/editar"
+                                           data-abrir-formulario data-acao="/autores/{{ autor.codigo }}"
+                                           data-titulo="Editar autor" data-campos="{{ {nome: autor.nome}|json_encode }}">
                                             Editar<span class="visually-hidden"> {{ autor.nome }}</span>
                                         </a>
                                         <form method="post" action="/autores/{{ autor.codigo }}/excluir"
@@ -56,6 +60,12 @@
             </div>
         </div>
     {% endif %}
+
+    {% embed 'componentes/modal-formulario.html.twig' with {titulo: 'Cadastrar autor'} %}
+        {% block corpo %}
+            {% include 'autores/_formulario.html.twig' with formulario|merge({emModal: true}) only %}
+        {% endblock %}
+    {% endembed %}
 
     {% if bloqueio %}
         <div class="modal fade" id="modal-bloqueio" tabindex="-1" aria-labelledby="titulo-bloqueio" aria-hidden="true"
@@ -87,4 +97,6 @@
 {% block scripts %}
     <script type="module" src="/assets/js/confirmar-envio.js"></script>
     <script type="module" src="/assets/js/abrir-modal.js"></script>
+    <script type="module" src="/assets/js/formulario-em-modal.js"></script>
+    <script type="module" src="/assets/js/validar-formulario.js"></script>
 {% endblock %}

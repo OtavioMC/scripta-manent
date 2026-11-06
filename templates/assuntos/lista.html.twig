@@ -8,7 +8,8 @@
             <h1 class="titulo-secao mb-1">Assuntos</h1>
             <p class="texto-suave mb-0">Assuntos que podem ser vinculados aos livros, em ordem alfabética.</p>
         </div>
-        <a class="btn btn-destaque" href="/assuntos/novo">Cadastrar assunto</a>
+        <a class="btn btn-destaque" href="/assuntos/novo" data-abrir-formulario data-acao="/assuntos"
+           data-titulo="Cadastrar assunto">Cadastrar assunto</a>
     </div>
 
     {% if aviso %}
@@ -19,7 +20,8 @@
         <div class="estado-vazio text-center">
             <p class="fw-semibold mb-1">Nenhum assunto cadastrado.</p>
             <p class="texto-suave mb-3">Cadastre o primeiro assunto para poder vinculá-lo aos livros.</p>
-            <a class="btn btn-destaque" href="/assuntos/novo">Cadastrar assunto</a>
+            <a class="btn btn-destaque" href="/assuntos/novo" data-abrir-formulario data-acao="/assuntos"
+               data-titulo="Cadastrar assunto">Cadastrar assunto</a>
         </div>
     {% else %}
         <div class="cartao-tabela">
@@ -38,7 +40,10 @@
                                 <td>{{ assunto.descricao }}</td>
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2">
-                                        <a class="btn btn-sm btn-outline-primary" href="/assuntos/{{ assunto.codigo }}/editar">
+                                        <a class="btn btn-sm btn-outline-primary" href="/assuntos/{{ assunto.codigo }}/editar"
+                                           data-abrir-formulario data-acao="/assuntos/{{ assunto.codigo }}"
+                                           data-titulo="Editar assunto"
+                                           data-campos="{{ {descricao: assunto.descricao}|json_encode }}">
                                             Editar<span class="visually-hidden"> {{ assunto.descricao }}</span>
                                         </a>
                                         <form method="post" action="/assuntos/{{ assunto.codigo }}/excluir"
@@ -56,6 +61,12 @@
             </div>
         </div>
     {% endif %}
+
+    {% embed 'componentes/modal-formulario.html.twig' with {titulo: 'Cadastrar assunto'} %}
+        {% block corpo %}
+            {% include 'assuntos/_formulario.html.twig' with formulario|merge({emModal: true}) only %}
+        {% endblock %}
+    {% endembed %}
 
     {% if bloqueio %}
         <div class="modal fade" id="modal-bloqueio" tabindex="-1" aria-labelledby="titulo-bloqueio" aria-hidden="true"
@@ -87,4 +98,6 @@
 {% block scripts %}
     <script type="module" src="/assets/js/confirmar-envio.js"></script>
     <script type="module" src="/assets/js/abrir-modal.js"></script>
+    <script type="module" src="/assets/js/formulario-em-modal.js"></script>
+    <script type="module" src="/assets/js/validar-formulario.js"></script>
 {% endblock %}

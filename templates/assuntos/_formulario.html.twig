@@ -1,0 +1,6 @@
+{% import 'macros/formulario.html.twig' as formulario %}
+
+<form method="post" action="{{ acao }}" novalidate data-validar>
+    {{ formulario.texto('descricao', 'Descrição', descricao, erros.descricao ?? null, descricaoMaxima, descricaoObrigatoria) }}
+    {{ formulario.botoes('Salvar assunto', '/assuntos', emModal) }}
+</form>

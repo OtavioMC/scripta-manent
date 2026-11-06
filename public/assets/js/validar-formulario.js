@@ -4,8 +4,10 @@ function marcarCampos(formulario) {
         const valido = campo.validity.valid;
         campo.classList.toggle('is-invalid', !valido);
         campo.toggleAttribute('aria-invalid', !valido);
-        if (erro && campo.validity.valueMissing) {
-            erro.textContent = erro.dataset.mensagemObrigatorio;
+        if (erro && !valido) {
+            erro.textContent = campo.validity.valueMissing
+                ? erro.dataset.mensagemObrigatorio
+                : erro.dataset.mensagemFormato;
         }
     }
     formulario.querySelector(':invalid')?.focus();

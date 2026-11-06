@@ -22,14 +22,27 @@ final readonly class TelaDeFormularioDeAssunto
      */
     public function responder(?int $codigo, string $descricao, array $erros = [], int $status = 200): ResponseInterface
     {
-        return $this->visao->responder('assuntos/formulario.html.twig', [
+        return $this->visao->responder(
+            'assuntos/formulario.html.twig',
+            $this->dados($codigo, $descricao, $erros),
+            $status,
+        );
+    }
+
+    /**
+     * @param array<string, string> $erros
+     * @return array<string, mixed>
+     */
+    public function dados(?int $codigo, string $descricao, array $erros = []): array
+    {
+        return [
             'editando' => $codigo !== null,
             'acao' => $codigo === null ? '/assuntos' : sprintf('/assuntos/%d', $codigo),
             'descricao' => $descricao,
             'erros' => $erros,
             'descricaoMaxima' => Assunto::DESCRICAO_MAXIMA,
             'descricaoObrigatoria' => Assunto::DESCRICAO_OBRIGATORIA,
-        ], $status);
+        ];
     }
 
     public function naoEncontrado(int $codigo): ResponseInterface

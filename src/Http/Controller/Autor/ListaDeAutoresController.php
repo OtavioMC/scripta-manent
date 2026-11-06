@@ -17,6 +17,7 @@ final readonly class ListaDeAutoresController implements RequestHandlerInterface
         private Visao $visao,
         private CadastroDeAutores $cadastro,
         private Sessao $sessao,
+        private TelaDeFormularioDeAutor $formulario,
     ) {
     }
 
@@ -28,6 +29,7 @@ final readonly class ListaDeAutoresController implements RequestHandlerInterface
             'autores' => $this->cadastro->listar(),
             'aviso' => is_string($aviso) ? $aviso : null,
             'bloqueio' => $this->bloqueio($this->sessao->retirar('bloqueio')),
+            'formulario' => $this->formulario->dados(null, ''),
         ]);
     }
 

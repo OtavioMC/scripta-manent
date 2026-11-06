@@ -1,7 +1,5 @@
 {% extends 'base.html.twig' %}
 
-{% import 'macros/formulario.html.twig' as formulario %}
-
 {% block titulo %}{{ editando ? 'Editar assunto' : 'Cadastrar assunto' }}{% endblock %}
 
 {% block conteudo %}
@@ -14,13 +12,9 @@
 
     <h1 class="titulo-secao mb-4">{{ editando ? 'Editar assunto' : 'Cadastrar assunto' }}</h1>
 
-    <form class="cartao-formulario" method="post" action="{{ acao }}" novalidate data-validar>
-        {{ formulario.texto('descricao', 'Descrição', descricao, erros.descricao ?? null, descricaoMaxima, descricaoObrigatoria) }}
-        <div class="d-flex flex-column flex-sm-row gap-2">
-            <button class="btn btn-destaque" type="submit">Salvar assunto</button>
-            <a class="btn btn-outline-primary" href="/assuntos">Cancelar</a>
-        </div>
-    </form>
+    <div class="cartao-formulario">
+        {% include 'assuntos/_formulario.html.twig' with {emModal: false} %}
+    </div>
 {% endblock %}
 
 {% block scripts %}
