@@ -10,6 +10,7 @@ services:
       BANCO_USUARIO: aplicacao
       BANCO_SENHA: ${BANCO_SENHA:?defina BANCO_SENHA no .env}
       GOTENBERG_URL: http://gotenberg:3000
+      NGINX_HTPASSWD: ${NGINX_HTPASSWD:?defina NGINX_HTPASSWD no .env}
     depends_on:
       mysql:
         condition: service_healthy
@@ -47,8 +48,6 @@ services:
   web:
     image: ghcr.io/otaviomc/scripta-manent-web:producao
     restart: unless-stopped
-    environment:
-      NGINX_HTPASSWD: ${NGINX_HTPASSWD:?defina NGINX_HTPASSWD no .env}
     depends_on: [php]
     mem_limit: 128m
 

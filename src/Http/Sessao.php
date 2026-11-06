@@ -11,4 +11,8 @@ interface Sessao
     public function guardar(string $chave, mixed $valor): void;
 
     public function retirar(string $chave): mixed;
+
+    public function renovarIdentificador(): void;
+
+    public function encerrar(): void;
 }

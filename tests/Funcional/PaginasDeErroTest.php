@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace ScriptaManent\Tests\Funcional;
 
-use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 final class PaginasDeErroTest extends TestCase
 {
@@ -52,9 +50,6 @@ final class PaginasDeErroTest extends TestCase
 
     private function abrir(string $metodo, string $caminho): ResponseInterface
     {
-        $aplicacao = require __DIR__ . '/../../config/aplicacao.php';
-        self::assertInstanceOf(RequestHandlerInterface::class, $aplicacao);
-
-        return $aplicacao->handle(new ServerRequest($metodo, $caminho));
+        return Aplicacao::abrir($metodo, $caminho);
     }
 }

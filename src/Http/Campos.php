@@ -32,6 +32,14 @@ final class Campos
         return array_values(array_map(intval(...), $validos));
     }
 
+    public static function origem(ServerRequestInterface $request): string
+    {
+        $cloudflare = $request->getHeaderLine('CF-Connecting-IP');
+        $endereco = $request->getServerParams()['REMOTE_ADDR'] ?? null;
+
+        return $cloudflare !== '' ? $cloudflare : (is_string($endereco) ? $endereco : 'desconhecida');
+    }
+
     public static function busca(ServerRequestInterface $request): Busca
     {
         $valor = $request->getQueryParams()['busca'] ?? '';

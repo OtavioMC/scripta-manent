@@ -13,6 +13,7 @@ services:
       BANCO_USUARIO: aplicacao
       BANCO_SENHA: ${BANCO_SENHA:?rode sh bin/gerar-env para criar o .env}
       GOTENBERG_URL: http://gotenberg:3000
+      NGINX_HTPASSWD: ${NGINX_HTPASSWD:?rode sh bin/gerar-env para criar o .env}
     depends_on:
       mysql:
         condition: service_healthy

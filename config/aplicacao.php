@@ -7,9 +7,16 @@ use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
 use ScriptaManent\Application\Livro\CadastroDeLivros;
+use ScriptaManent\Http\Acesso\Credencial;
+use ScriptaManent\Http\Acesso\ExigeLogin;
+use ScriptaManent\Http\Acesso\LimiteDeTentativas;
+use ScriptaManent\Http\Acesso\SessaoDeAcesso;
 use ScriptaManent\Http\Apresentador\FormularioDeAssuntoApresentador;
 use ScriptaManent\Http\Apresentador\FormularioDeAutorApresentador;
 use ScriptaManent\Http\Apresentador\FormularioDeLivroApresentador;
+use ScriptaManent\Http\Controller\Acesso\EntrarController;
+use ScriptaManent\Http\Controller\Acesso\SairController;
+use ScriptaManent\Http\Controller\Acesso\TelaDeLoginController;
 use ScriptaManent\Http\Controller\Assunto\ExcluirAssuntoController;
 use ScriptaManent\Http\Controller\Assunto\FormularioDeAssuntoController;
 use ScriptaManent\Http\Controller\Assunto\ListaDeAssuntosController;
@@ -29,7 +36,7 @@ use ScriptaManent\Http\Controller\RestaurarDadosDeExemploController;
 use ScriptaManent\Http\Controller\VersaoController;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Roteador;
-use ScriptaManent\Http\SessaoNativa;
+use ScriptaManent\Http\Sessao;
 use ScriptaManent\Http\TokenCsrf;
 use ScriptaManent\Http\TratadorDeErros;
 use ScriptaManent\Http\VerificadorDeCsrf;
@@ -44,7 +51,7 @@ use ScriptaManent\Infrastructure\Log\LogEmArquivo;
 use ScriptaManent\Infrastructure\Pdf\GeradorDePdfGotenberg;
 use Twig\Environment;
 
-return (static function (): RequestHandlerInterface {
+return static function (Sessao $sessao): RequestHandlerInterface {
     $variavel = static function (string $nome): string {
         $valor = getenv($nome);
         if ($valor === false || $valor === '') {
@@ -61,7 +68,9 @@ return (static function (): RequestHandlerInterface {
         $variavel('BANCO_SENHA'),
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false],
     ));
-    $sessao = new SessaoNativa();
+    $relogio = static fn (): int => time();
+    $acesso = new SessaoDeAcesso($sessao, $relogio);
+    $credencial = getenv('NGINX_HTPASSWD');
     $log = new LogEmArquivo('php://stderr');
     $gotenberg = getenv('GOTENBERG_URL');
     $geradorDePdf = new GeradorDePdfGotenberg($gotenberg === false ? '' : $gotenberg, 20);
@@ -109,6 +118,16 @@ return (static function (): RequestHandlerInterface {
     $roteador = new Roteador($paginaDeErro, [
         ['GET', '/', new InicioController($visao)],
         ['GET', '/versao', new VersaoController($respostas, $versao === false ? 'dev' : $versao)],
+        ['GET', '/login', new TelaDeLoginController($visao, $acesso, $sessao)],
+        ['POST', '/login', $protegido(new EntrarController(
+            $visao,
+            Credencial::doFormatoHtpasswd($credencial === false ? '' : $credencial),
+            $acesso,
+            $sessao,
+            new LimiteDeTentativas(sys_get_temp_dir() . '/scripta-manent-login', $relogio),
+            $log,
+        ))],
+        ['POST', '/sair', $protegido(new SairController($visao, $acesso, $log))],
         ['POST', '/dados-de-exemplo/restaurar', $protegido(new RestaurarDadosDeExemploController(
             new RestauradorDeDadosPdo($conexao, __DIR__ . '/../banco/003-dados-exemplo.sql'),
             $sessao,
@@ -155,5 +174,5 @@ return (static function (): RequestHandlerInterface {
         ['POST', '/assuntos/{codigo:\d+}/excluir', $protegido($excluirAssunto)],
     ]);
 
-    return new TratadorDeErros($roteador, $paginaDeErro, $log);
-})();
+    return new TratadorDeErros(new ExigeLogin($roteador, $acesso, $sessao, $visao), $paginaDeErro, $log);
+};

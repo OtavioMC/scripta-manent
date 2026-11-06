@@ -8,6 +8,10 @@ use ScriptaManent\Http\Sessao;
 
 final class SessaoEmMemoria implements Sessao
 {
+    public int $renovacoes = 0;
+
+    public bool $encerrada = false;
+
     /** @var array<string, mixed> */
     private array $valores = [];
 
@@ -27,5 +31,16 @@ final class SessaoEmMemoria implements Sessao
         unset($this->valores[$chave]);
 
         return $valor;
+    }
+
+    public function renovarIdentificador(): void
+    {
+        $this->renovacoes++;
+    }
+
+    public function encerrar(): void
+    {
+        $this->valores = [];
+        $this->encerrada = true;
     }
 }

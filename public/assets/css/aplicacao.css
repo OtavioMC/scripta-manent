@@ -429,6 +429,32 @@ body {
     border-bottom: 0;
 }
 
+.login-fundo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1.5rem 1rem;
+    background:
+        linear-gradient(135deg, rgba(20, 12, 8, 0.88), rgba(63, 20, 20, 0.7)),
+        url("/assets/img/carrossel/livros-1920.jpg") center / cover no-repeat;
+}
+
+.cartao-login {
+    width: 100%;
+    max-width: 26rem;
+    padding: 2rem;
+    background-color: var(--sm-cartao);
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: var(--sm-raio-grande);
+    box-shadow: 0 1.5rem 3rem -1rem rgba(0, 0, 0, 0.6);
+}
+
+.cartao-login .marca {
+    display: block;
+    font-size: 2rem;
+}
+
 .pagina-erro {
     max-width: 40rem;
 }

@@ -9,12 +9,19 @@ if [ -f .env ]; then
 fi
 
 senha() {
-    LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32
+    LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$1"
 }
 
-sed -e "s/^BANCO_SENHA_ROOT=$/BANCO_SENHA_ROOT=$(senha)/" \
-    -e "s/^BANCO_SENHA=$/BANCO_SENHA=$(senha)/" \
+senha_de_acesso=$(senha 16)
+hash_de_acesso=$(docker run --rm php:8.4.27-cli-alpine3.24 php -r \
+    'echo password_hash($argv[1], PASSWORD_BCRYPT, ["cost" => 12]);' "$senha_de_acesso")
+
+sed -e "s/^BANCO_SENHA_ROOT=$/BANCO_SENHA_ROOT=$(senha 32)/" \
+    -e "s/^BANCO_SENHA=$/BANCO_SENHA=$(senha 32)/" \
+    -e '/^NGINX_HTPASSWD=/d' \
     .env.exemplo > .env
+printf "NGINX_HTPASSWD='dev:%s'\n" "$hash_de_acesso" >> .env
 chmod 600 .env
 
 echo ".env criado com senhas aleatórias para o banco."
+echo "Login local: usuário dev, senha $senha_de_acesso"

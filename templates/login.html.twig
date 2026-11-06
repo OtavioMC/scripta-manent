@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#7f1d1d">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <title>Entrar | Scripta Manent</title>
+    <script src="/assets/js/aplicar-tema.js"></script>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/aplicacao.css">
+</head>
+<body class="pagina-login">
+    <main class="login-fundo" id="conteudo">
+        <div class="cartao-login">
+            <p class="marca text-center mb-1">Scripta Manent</p>
+            <p class="proverbio text-center mb-4" lang="la">
+                <span class="proverbio-latim">“Verba volant, scripta manent”</span>
+                <span class="proverbio-traducao" lang="pt-BR">As palavras voam, os escritos permanecem.</span>
+            </p>
+
+            <h1 class="h4 mb-3">Entrar</h1>
+
+            {% if aviso %}
+                <div class="alert alert-info" role="status">{{ aviso }}</div>
+            {% endif %}
+            {% if erro %}
+                <div class="alert alert-danger" role="alert">{{ erro }}</div>
+            {% endif %}
+
+            <form method="post" action="/login" novalidate data-validar>
+                {{ csrf.campo|raw }}
+                <div class="mb-3">
+                    <label class="form-label" for="campo-usuario">Usuário</label>
+                    <input class="form-control" type="text" id="campo-usuario" name="usuario" value="{{ usuario }}"
+                           autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus
+                           aria-describedby="erro-usuario">
+                    <div class="invalid-feedback" id="erro-usuario" data-mensagem-obrigatorio="Informe o usuário."
+                         data-mensagem-formato="Informe o usuário.">Informe o usuário.</div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" for="campo-senha">Senha</label>
+                    <input class="form-control" type="password" id="campo-senha" name="senha"
+                           autocomplete="current-password" required aria-describedby="erro-senha">
+                    <div class="invalid-feedback" id="erro-senha" data-mensagem-obrigatorio="Informe a senha."
+                         data-mensagem-formato="Informe a senha.">Informe a senha.</div>
+                </div>
+                <button class="btn btn-destaque w-100" type="submit">Entrar</button>
+            </form>
+        </div>
+    </main>
+
+    <script type="module" src="/assets/js/validar-formulario.js"></script>
+</body>
+</html>
