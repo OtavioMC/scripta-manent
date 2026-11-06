@@ -1,6 +1,7 @@
 {% import 'macros/formulario.html.twig' as formulario %}
 
 <form method="post" action="{{ acao }}" novalidate data-validar>
+    {{ csrf.campo|raw }}
     {% if erros.vinculos is defined %}
         <div class="alert alert-danger" role="alert">{{ erros.vinculos }}</div>
     {% endif %}

@@ -16,7 +16,7 @@ use ScriptaManent\Http\Controller\RelatorioPdfController;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Tests\Duble\LogEmMemoria;
 use ScriptaManent\Tests\Duble\SessaoEmMemoria;
-use Twig\Environment;
+use ScriptaManent\Tests\Duble\TwigDeTeste;
 
 final class RelatorioPdfControllerTest extends TestCase
 {
@@ -58,8 +58,7 @@ final class RelatorioPdfControllerTest extends TestCase
 
     private function baixar(GeradorDePdf $gerador): ResponseInterface
     {
-        $twig = require __DIR__ . '/../../../../config/twig.php';
-        self::assertInstanceOf(Environment::class, $twig);
+        $twig = TwigDeTeste::criar();
         $fonte = new class implements FonteDoRelatorio {
             public function linhas(): array
             {

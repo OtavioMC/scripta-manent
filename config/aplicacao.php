@@ -30,7 +30,9 @@ use ScriptaManent\Http\Controller\VersaoController;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Roteador;
 use ScriptaManent\Http\SessaoNativa;
+use ScriptaManent\Http\TokenCsrf;
 use ScriptaManent\Http\TratadorDeErros;
+use ScriptaManent\Http\VerificadorDeCsrf;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Infrastructure\Banco\Conexao;
 use ScriptaManent\Infrastructure\Banco\FonteDoRelatorioPdo;
@@ -77,8 +79,16 @@ return (static function (): RequestHandlerInterface {
     if (!$twig instanceof Environment) {
         throw new LogicException('config/twig.php precisa devolver um Twig\Environment.');
     }
+    $tokenCsrf = new TokenCsrf($sessao);
+    $twig->addGlobal('csrf', $tokenCsrf);
     $visao = new Visao($twig, $respostas);
     $paginaDeErro = new PaginaDeErro($visao);
+    $protegido = static fn (RequestHandlerInterface $acao): RequestHandlerInterface => new VerificadorDeCsrf(
+        $acao,
+        $tokenCsrf,
+        $paginaDeErro,
+        $log,
+    );
     $fonteDoRelatorio = new FonteDoRelatorioPdo($conexao);
     $autores = new CadastroDeAutores(new RepositorioDeAutoresPdo($conexao));
     $formularioDeAutor = new FormularioDeAutorApresentador($visao, $paginaDeErro);
@@ -99,12 +109,12 @@ return (static function (): RequestHandlerInterface {
     $roteador = new Roteador($paginaDeErro, [
         ['GET', '/', new InicioController($visao)],
         ['GET', '/versao', new VersaoController($respostas, $versao === false ? 'dev' : $versao)],
-        ['POST', '/dados-de-exemplo/restaurar', new RestaurarDadosDeExemploController(
+        ['POST', '/dados-de-exemplo/restaurar', $protegido(new RestaurarDadosDeExemploController(
             new RestauradorDeDadosPdo($conexao, __DIR__ . '/../banco/003-dados-exemplo.sql'),
             $sessao,
             $visao,
             $log,
-        )],
+        ))],
         ['GET', '/relatorio', new RelatorioController(
             $visao,
             $fonteDoRelatorio,
@@ -127,22 +137,22 @@ return (static function (): RequestHandlerInterface {
         )],
         ['GET', '/livros', new ListaDeLivrosController($visao, $livros, $sessao, $formularioDeLivro)],
         ['GET', '/livros/novo', $abrirLivro],
-        ['POST', '/livros', $salvarLivro],
+        ['POST', '/livros', $protegido($salvarLivro)],
         ['GET', '/livros/{codigo:\d+}/editar', $abrirLivro],
-        ['POST', '/livros/{codigo:\d+}', $salvarLivro],
-        ['POST', '/livros/{codigo:\d+}/excluir', $excluirLivro],
+        ['POST', '/livros/{codigo:\d+}', $protegido($salvarLivro)],
+        ['POST', '/livros/{codigo:\d+}/excluir', $protegido($excluirLivro)],
         ['GET', '/autores', new ListaDeAutoresController($visao, $autores, $sessao, $formularioDeAutor)],
         ['GET', '/autores/novo', $abrirAutor],
-        ['POST', '/autores', $salvarAutor],
+        ['POST', '/autores', $protegido($salvarAutor)],
         ['GET', '/autores/{codigo:\d+}/editar', $abrirAutor],
-        ['POST', '/autores/{codigo:\d+}', $salvarAutor],
-        ['POST', '/autores/{codigo:\d+}/excluir', $excluirAutor],
+        ['POST', '/autores/{codigo:\d+}', $protegido($salvarAutor)],
+        ['POST', '/autores/{codigo:\d+}/excluir', $protegido($excluirAutor)],
         ['GET', '/assuntos', new ListaDeAssuntosController($visao, $assuntos, $sessao, $formularioDeAssunto)],
         ['GET', '/assuntos/novo', $abrirAssunto],
-        ['POST', '/assuntos', $salvarAssunto],
+        ['POST', '/assuntos', $protegido($salvarAssunto)],
         ['GET', '/assuntos/{codigo:\d+}/editar', $abrirAssunto],
-        ['POST', '/assuntos/{codigo:\d+}', $salvarAssunto],
-        ['POST', '/assuntos/{codigo:\d+}/excluir', $excluirAssunto],
+        ['POST', '/assuntos/{codigo:\d+}', $protegido($salvarAssunto)],
+        ['POST', '/assuntos/{codigo:\d+}/excluir', $protegido($excluirAssunto)],
     ]);
 
     return new TratadorDeErros($roteador, $paginaDeErro, $log);

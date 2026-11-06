@@ -25,7 +25,7 @@ use ScriptaManent\Tests\Duble\RepositorioDeAssuntosEmMemoria;
 use ScriptaManent\Tests\Duble\RepositorioDeAutoresEmMemoria;
 use ScriptaManent\Tests\Duble\RepositorioDeLivrosEmMemoria;
 use ScriptaManent\Tests\Duble\SessaoEmMemoria;
-use Twig\Environment;
+use ScriptaManent\Tests\Duble\TwigDeTeste;
 
 final class TelasDeLivrosTest extends TestCase
 {
@@ -39,8 +39,7 @@ final class TelasDeLivrosTest extends TestCase
 
     protected function setUp(): void
     {
-        $twig = require __DIR__ . '/../../../../../config/twig.php';
-        self::assertInstanceOf(Environment::class, $twig);
+        $twig = TwigDeTeste::criar();
 
         $this->autores = new RepositorioDeAutoresEmMemoria();
         $this->assuntos = new RepositorioDeAssuntosEmMemoria();

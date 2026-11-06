@@ -15,7 +15,7 @@ use ScriptaManent\Http\Controller\RelatorioController;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Infrastructure\Pdf\GeradorDePdfGotenberg;
 use ScriptaManent\Tests\Duble\SessaoEmMemoria;
-use Twig\Environment;
+use ScriptaManent\Tests\Duble\TwigDeTeste;
 
 final class RelatorioControllerTest extends TestCase
 {
@@ -43,8 +43,7 @@ final class RelatorioControllerTest extends TestCase
      */
     private function abrir(array $linhas): string
     {
-        $twig = require __DIR__ . '/../../../../config/twig.php';
-        self::assertInstanceOf(Environment::class, $twig);
+        $twig = TwigDeTeste::criar();
         $fonte = new class ($linhas) implements FonteDoRelatorio {
             /**
              * @param list<LinhaDoRelatorio> $linhas

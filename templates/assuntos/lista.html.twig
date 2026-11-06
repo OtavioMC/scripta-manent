@@ -50,6 +50,7 @@
                                         </a>
                                         <form method="post" action="/assuntos/{{ assunto.codigo }}/excluir"
                                               data-confirmar="Excluir o assunto {{ assunto.descricao }}?">
+                                            {{ csrf.campo|raw }}
                                             <button class="btn btn-sm btn-outline-danger" type="submit">
                                                 Excluir<span class="visually-hidden"> {{ assunto.descricao }}</span>
                                             </button>

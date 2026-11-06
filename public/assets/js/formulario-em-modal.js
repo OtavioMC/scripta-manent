@@ -2,7 +2,7 @@ const modal = document.getElementById('modal-formulario');
 
 function preencher(formulario, campos) {
     for (const elemento of formulario.elements) {
-        if (!elemento.name) {
+        if (!elemento.name || elemento.type === 'hidden') {
             continue;
         }
         const nome = elemento.name.replace('[]', '');

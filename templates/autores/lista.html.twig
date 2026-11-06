@@ -49,6 +49,7 @@
                                         </a>
                                         <form method="post" action="/autores/{{ autor.codigo }}/excluir"
                                               data-confirmar="Excluir o autor {{ autor.nome }}?">
+                                            {{ csrf.campo|raw }}
                                             <button class="btn btn-sm btn-outline-danger" type="submit">
                                                 Excluir<span class="visually-hidden"> {{ autor.nome }}</span>
                                             </button>

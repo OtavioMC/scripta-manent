@@ -19,7 +19,7 @@ use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Tests\Duble\RepositorioDeAssuntosEmMemoria;
 use ScriptaManent\Tests\Duble\SessaoEmMemoria;
-use Twig\Environment;
+use ScriptaManent\Tests\Duble\TwigDeTeste;
 
 final class TelasDeAssuntosTest extends TestCase
 {
@@ -31,8 +31,7 @@ final class TelasDeAssuntosTest extends TestCase
 
     protected function setUp(): void
     {
-        $twig = require __DIR__ . '/../../../../../config/twig.php';
-        self::assertInstanceOf(Environment::class, $twig);
+        $twig = TwigDeTeste::criar();
 
         $this->repositorio = new RepositorioDeAssuntosEmMemoria();
         $this->sessao = new SessaoEmMemoria();

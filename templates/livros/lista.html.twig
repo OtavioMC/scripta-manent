@@ -69,6 +69,7 @@
                                         </a>
                                         <form method="post" action="/livros/{{ livro.codigo }}/excluir"
                                               data-confirmar="Excluir o livro {{ livro.titulo }}? Os vínculos com autores e assuntos também serão apagados.">
+                                            {{ csrf.campo|raw }}
                                             <button class="btn btn-sm btn-outline-danger" type="submit">
                                                 Excluir<span class="visually-hidden"> {{ livro.titulo }}</span>
                                             </button>
