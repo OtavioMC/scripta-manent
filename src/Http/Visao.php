@@ -27,4 +27,9 @@ final readonly class Visao
 
         return $resposta;
     }
+
+    public function redirecionar(string $endereco): ResponseInterface
+    {
+        return $this->respostas->createResponse(303)->withHeader('Location', $endereco);
+    }
 }

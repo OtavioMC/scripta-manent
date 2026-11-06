@@ -9,6 +9,7 @@ use ScriptaManent\Domain\ErroDeValidacao;
 final readonly class Autor
 {
     public const int NOME_MAXIMO = 40;
+    public const string NOME_OBRIGATORIO = 'Informe o nome do autor.';
 
     private function __construct(
         public ?int $codigo,
@@ -31,7 +32,7 @@ final readonly class Autor
         $nome = trim($nome);
 
         if ($nome === '') {
-            throw new ErroDeValidacao(['nome' => 'Informe o nome do autor.']);
+            throw new ErroDeValidacao(['nome' => self::NOME_OBRIGATORIO]);
         }
 
         if (mb_strlen($nome) > self::NOME_MAXIMO) {

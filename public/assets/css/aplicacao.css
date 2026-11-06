@@ -290,6 +290,36 @@ body {
     color: transparent;
 }
 
+.cartao-tabela,
+.cartao-formulario,
+.estado-vazio {
+    background-color: var(--sm-cartao);
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: var(--sm-raio-grande);
+}
+
+.cartao-tabela {
+    overflow: hidden;
+}
+
+.cartao-tabela .table {
+    --bs-table-bg: transparent;
+}
+
+.cartao-tabela th,
+.cartao-tabela td {
+    padding: 0.875rem 1.25rem;
+}
+
+.cartao-formulario {
+    max-width: 40rem;
+    padding: 1.5rem;
+}
+
+.estado-vazio {
+    padding: 3rem 1.5rem;
+}
+
 .pagina-erro {
     max-width: 40rem;
 }

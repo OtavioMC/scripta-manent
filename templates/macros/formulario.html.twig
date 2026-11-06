@@ -1,0 +1,12 @@
+{% macro texto(nome, rotulo, valor, erro, maximo, mensagemObrigatorio) %}
+    <div class="mb-4">
+        <label class="form-label" for="campo-{{ nome }}">{{ rotulo }}</label>
+        <input class="form-control{{ erro ? ' is-invalid' }}" type="text" id="campo-{{ nome }}" name="{{ nome }}"
+               value="{{ valor }}" maxlength="{{ maximo }}" required
+               aria-describedby="ajuda-{{ nome }} erro-{{ nome }}"{% if erro %} aria-invalid="true"{% endif %}>
+        <div class="form-text" id="ajuda-{{ nome }}">Até {{ maximo }} caracteres.</div>
+        <div class="invalid-feedback" id="erro-{{ nome }}" data-mensagem-obrigatorio="{{ mensagemObrigatorio }}">
+            {{- erro ?? mensagemObrigatorio -}}
+        </div>
+    </div>
+{% endmacro %}
