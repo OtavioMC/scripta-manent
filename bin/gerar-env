@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+cd "$(dirname "$0")/.."
+
+if [ -f .env ]; then
+    echo "O .env já existe e não foi alterado."
+    exit 0
+fi
+
+senha() {
+    LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32
+}
+
+sed -e "s/^BANCO_SENHA_ROOT=$/BANCO_SENHA_ROOT=$(senha)/" \
+    -e "s/^BANCO_SENHA=$/BANCO_SENHA=$(senha)/" \
+    .env.exemplo > .env
+chmod 600 .env
+
+echo ".env criado com senhas aleatórias para o banco."
