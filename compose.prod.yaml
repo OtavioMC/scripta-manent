@@ -4,7 +4,32 @@ services:
   php:
     image: ghcr.io/otaviomc/scripta-manent-php:producao
     restart: unless-stopped
+    environment:
+      BANCO_HOST: mysql
+      BANCO_NOME: scripta_manent
+      BANCO_USUARIO: aplicacao
+      BANCO_SENHA: ${BANCO_SENHA:?defina BANCO_SENHA no .env}
+    depends_on:
+      mysql:
+        condition: service_healthy
     mem_limit: 512m
+
+  mysql:
+    image: mysql:8.4.13
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${BANCO_SENHA_ROOT:?defina BANCO_SENHA_ROOT no .env}
+      MYSQL_DATABASE: scripta_manent
+      BANCO_SENHA: ${BANCO_SENHA:?defina BANCO_SENHA no .env}
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./banco:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+    mem_limit: 1g
 
   web:
     image: ghcr.io/otaviomc/scripta-manent-web:producao
@@ -22,3 +47,6 @@ services:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:?defina TUNNEL_TOKEN no .env}
     depends_on: [web]
     mem_limit: 128m
+
+volumes:
+  mysql:
