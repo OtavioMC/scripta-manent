@@ -82,6 +82,16 @@ body {
     color: transparent;
 }
 
+.navbar-aplicacao .nav-link.active {
+    font-weight: 600;
+    color: var(--sm-vinho);
+    box-shadow: inset 0 -2px 0 currentColor;
+}
+
+[data-bs-theme="dark"] .navbar-aplicacao .nav-link.active {
+    color: #f5c48b;
+}
+
 .proverbio {
     line-height: 1.2;
 }

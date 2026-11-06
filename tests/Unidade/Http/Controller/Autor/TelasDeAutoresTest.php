@@ -66,6 +66,14 @@ final class TelasDeAutoresTest extends TestCase
         self::assertStringContainsString('data-campos="{&quot;nome&quot;:&quot;Clarice Lispector&quot;}"', $pagina);
     }
 
+    public function testMenuDestacaATelaDeAutores(): void
+    {
+        $pagina = (string) $this->lista()->getBody();
+
+        self::assertStringContainsString('<a class="nav-link active" aria-current="page" href="/autores">', $pagina);
+        self::assertSame(1, substr_count($pagina, 'aria-current="page" href='));
+    }
+
     public function testListaVaziaDizComoComecar(): void
     {
         $pagina = (string) $this->lista()->getBody();
