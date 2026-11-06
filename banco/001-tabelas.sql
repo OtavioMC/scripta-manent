@@ -1,33 +1,41 @@
 CREATE TABLE Livro (
-  Codl INTEGER NOT NULL,
+  Codl INTEGER NOT NULL AUTO_INCREMENT,
   Titulo VARCHAR(40) NOT NULL,
   Editora VARCHAR(40) NOT NULL,
   Edicao INTEGER NOT NULL,
   AnoPublicacao VARCHAR(4) NOT NULL,
   Valor DECIMAL(10,2) NOT NULL,
   PRIMARY KEY (Codl)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE Autor (
-  CodAu INTEGER NOT NULL,
+  CodAu INTEGER NOT NULL AUTO_INCREMENT,
   Nome VARCHAR(40) NOT NULL,
   PRIMARY KEY (CodAu)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE Assunto (
-  codAs INTEGER NOT NULL,
+  codAs INTEGER NOT NULL AUTO_INCREMENT,
   Descricao VARCHAR(20) NOT NULL,
   PRIMARY KEY (codAs)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE Livro_Autor (
   Livro_Codl INTEGER NOT NULL,
   Autor_CodAu INTEGER NOT NULL,
-  PRIMARY KEY (Livro_Codl, Autor_CodAu)
-);
+  PRIMARY KEY (Livro_Codl, Autor_CodAu),
+  INDEX Livro_Autor_FKIndex1 (Livro_Codl),
+  INDEX Livro_Autor_FKIndex2 (Autor_CodAu),
+  CONSTRAINT Rel_01 FOREIGN KEY (Livro_Codl) REFERENCES Livro (Codl),
+  CONSTRAINT Rel_02 FOREIGN KEY (Autor_CodAu) REFERENCES Autor (CodAu)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE Livro_Assunto (
   Livro_Codl INTEGER NOT NULL,
   Assunto_codAs INTEGER NOT NULL,
-  PRIMARY KEY (Livro_Codl, Assunto_codAs)
-);
+  PRIMARY KEY (Livro_Codl, Assunto_codAs),
+  INDEX Livro_Assunto_FKIndex1 (Livro_Codl),
+  INDEX Livro_Assunto_FKIndex2 (Assunto_codAs),
+  CONSTRAINT Rel_03 FOREIGN KEY (Livro_Codl) REFERENCES Livro (Codl),
+  CONSTRAINT Rel_04 FOREIGN KEY (Assunto_codAs) REFERENCES Assunto (codAs)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
