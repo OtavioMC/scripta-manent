@@ -116,6 +116,16 @@ docker compose run --rm php composer testes
 
 ## Versões
 
+### 0.4.0
+
+Cria os cadastros de livros, autores e assuntos.
+
+- Lista, cadastro, edição e exclusão de livros, autores e assuntos, com o formulário abrindo em modal na própria lista
+- Valida no navegador e no servidor com os mesmos limites do banco, dizendo o limite na mensagem
+- Grava o livro e os vínculos com autores e assuntos numa única transação
+- Bloqueia a exclusão de autor ou assunto com livros e mostra os livros vinculados num modal
+- Valor em reais com máscara e ano com 4 dígitos
+
 ### 0.3.0
 
 Cria o layout e a tela inicial.
