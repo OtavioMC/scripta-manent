@@ -85,13 +85,36 @@
                         O relatório agrupa os livros por autor, com a quantidade e o valor de cada grupo, e pode ser
                         visto na tela ou baixado em PDF.
                     </p>
-                    <p class="mb-0">
+                    <p>
                         O nome vem do provérbio latino que diz que as palavras voam e os escritos permanecem.
                     </p>
+                    <button class="btn btn-outline-light" type="button" data-bs-toggle="modal"
+                            data-bs-target="#modal-restaurar">Restaurar dados de exemplo</button>
                 </div>
             </div>
         </div>
     </section>
+
+    <div class="modal fade" id="modal-restaurar" tabindex="-1" aria-labelledby="titulo-restaurar" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="titulo-restaurar">Restaurar dados de exemplo</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Todos os livros, autores e assuntos cadastrados serão apagados, e os dados de exemplo voltam a ser carregados.</p>
+                    <p class="mb-0">Essa ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" action="/dados-de-exemplo/restaurar">
+                        <button class="btn btn-danger" type="submit">Restaurar dados</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block scripts %}

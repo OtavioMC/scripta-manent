@@ -23,6 +23,7 @@ use ScriptaManent\Http\Controller\Livro\ExcluirLivroController;
 use ScriptaManent\Http\Controller\Livro\FormularioDeLivroController;
 use ScriptaManent\Http\Controller\Livro\ListaDeLivrosController;
 use ScriptaManent\Http\Controller\Livro\SalvarLivroController;
+use ScriptaManent\Http\Controller\RestaurarDadosDeExemploController;
 use ScriptaManent\Http\Controller\VersaoController;
 use ScriptaManent\Http\PaginaDeErro;
 use ScriptaManent\Http\Roteador;
@@ -33,6 +34,7 @@ use ScriptaManent\Infrastructure\Banco\Conexao;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAssuntosPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAutoresPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeLivrosPdo;
+use ScriptaManent\Infrastructure\Banco\RestauradorDeDadosPdo;
 use ScriptaManent\Infrastructure\Log\LogEmArquivo;
 use Twig\Environment;
 
@@ -54,6 +56,7 @@ return (static function (): RequestHandlerInterface {
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false],
     ));
     $sessao = new SessaoNativa();
+    $log = new LogEmArquivo('php://stderr');
 
     $twig = require __DIR__ . '/twig.php';
     if (!$twig instanceof Environment) {
@@ -80,6 +83,12 @@ return (static function (): RequestHandlerInterface {
     $roteador = new Roteador($paginaDeErro, [
         ['GET', '/', new InicioController($visao)],
         ['GET', '/versao', new VersaoController($respostas, $versao === false ? 'dev' : $versao)],
+        ['POST', '/dados-de-exemplo/restaurar', new RestaurarDadosDeExemploController(
+            new RestauradorDeDadosPdo($conexao, __DIR__ . '/../banco/003-dados-exemplo.sql'),
+            $sessao,
+            $visao,
+            $log,
+        )],
         ['GET', '/livros', new ListaDeLivrosController($visao, $livros, $sessao, $formularioDeLivro)],
         ['GET', '/livros/novo', $abrirLivro],
         ['POST', '/livros', $salvarLivro],
@@ -100,5 +109,5 @@ return (static function (): RequestHandlerInterface {
         ['POST', '/assuntos/{codigo:\d+}/excluir', $excluirAssunto],
     ]);
 
-    return new TratadorDeErros($roteador, $paginaDeErro, new LogEmArquivo('php://stderr'));
+    return new TratadorDeErros($roteador, $paginaDeErro, $log);
 })();

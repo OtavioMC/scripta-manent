@@ -27,6 +27,7 @@ COPY --from=dependencias /app/vendor/ vendor/
 COPY config/ config/
 COPY public/ public/
 COPY templates/ templates/
+COPY banco/003-dados-exemplo.sql banco/
 COPY src/ src/
 USER www-data
 
