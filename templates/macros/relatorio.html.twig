@@ -1,0 +1,52 @@
+{% macro quantidade(numero) %}{{ numero }} {{ numero == 1 ? 'livro' : 'livros' }}{% endmacro %}
+
+{% macro grupo(titulo, grupo, identificador) %}
+    {% import _self as relatorio %}
+    <section class="grupo-relatorio" aria-labelledby="{{ identificador }}">
+        <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-2">
+            <h3 class="h5 mb-0" id="{{ identificador }}">{{ titulo }}</h3>
+            <p class="texto-suave mb-0">{{ relatorio.quantidade(grupo.quantidade) }}, {{ grupo.valor.formatado }}</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle tabela-relatorio">
+                <caption class="visually-hidden">Livros de {{ titulo }}</caption>
+                <colgroup>
+                    <col class="coluna-titulo">
+                    <col class="coluna-editora">
+                    <col class="coluna-numero">
+                    <col class="coluna-numero">
+                    <col class="coluna-assuntos">
+                    <col class="coluna-valor">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">Título</th>
+                        <th scope="col">Editora</th>
+                        <th scope="col" class="text-end">Edição</th>
+                        <th scope="col" class="text-end">Ano</th>
+                        <th scope="col">Assuntos</th>
+                        <th scope="col" class="text-end">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for livro in grupo.livros %}
+                        <tr>
+                            <td>{{ livro.titulo }}</td>
+                            <td>{{ livro.editora }}</td>
+                            <td class="text-end">{{ livro.edicao }}ª</td>
+                            <td class="text-end">{{ livro.ano }}</td>
+                            <td>{{ livro.assuntos ?: 'Sem assunto' }}</td>
+                            <td class="text-end text-nowrap">{{ livro.valor.formatado }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th scope="row" colspan="5">Subtotal ({{ relatorio.quantidade(grupo.quantidade) }})</th>
+                        <td class="text-end text-nowrap fw-semibold">{{ grupo.valor.formatado }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+{% endmacro %}

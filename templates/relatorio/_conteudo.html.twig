@@ -1,0 +1,44 @@
+{% import 'macros/relatorio.html.twig' as macros %}
+
+{% if relatorio.totalDeLivros == 0 %}
+    <div class="estado-vazio text-center">
+        <p class="fw-semibold mb-1">Nenhum livro cadastrado.</p>
+        <p class="texto-suave mb-0">Cadastre livros para que eles apareçam no relatório, agrupados por autor.</p>
+    </div>
+{% else %}
+    <div class="row row-cols-1 row-cols-sm-2 g-3 mb-4 resumo-relatorio">
+        <div class="col">
+            <div class="cartao-resumo">
+                <p class="texto-suave mb-1">Total de livros</p>
+                <p class="valor-resumo mb-0">{{ relatorio.totalDeLivros }}</p>
+            </div>
+        </div>
+        <div class="col">
+            <div class="cartao-resumo">
+                <p class="texto-suave mb-1">Valor total do acervo</p>
+                <p class="valor-resumo mb-0">{{ relatorio.valorTotal.formatado }}</p>
+            </div>
+        </div>
+    </div>
+    <p class="texto-suave mb-4">
+        Livro com mais de um autor aparece no grupo de cada autor, mas conta uma vez só no total.
+    </p>
+
+    <h2 class="titulo-secao mb-3">Livros por autor</h2>
+    {% for grupo in relatorio.porAutor %}
+        {{ macros.grupo(grupo.titulo, grupo, 'autor-' ~ loop.index) }}
+    {% endfor %}
+    {% if relatorio.semAutor %}
+        {{ macros.grupo('Livros sem autor', relatorio.semAutor, 'sem-autor') }}
+    {% endif %}
+
+    <h2 class="titulo-secao mt-5 mb-1">Livros com mais de um autor</h2>
+    <p class="texto-suave mb-3">
+        Cada conjunto de autores aparece uma vez, com os livros escritos por todos eles juntos.
+    </p>
+    {% for grupo in relatorio.coautorias %}
+        {{ macros.grupo(grupo.titulo, grupo, 'coautoria-' ~ loop.index) }}
+    {% else %}
+        <p class="mb-0">Nenhum livro cadastrado tem mais de um autor.</p>
+    {% endfor %}
+{% endif %}

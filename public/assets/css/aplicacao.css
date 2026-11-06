@@ -363,6 +363,59 @@ body {
     padding: 3rem 1.5rem;
 }
 
+.cartao-resumo,
+.grupo-relatorio {
+    padding: 1.25rem 1.5rem;
+    background-color: var(--sm-cartao);
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: var(--sm-raio-grande);
+}
+
+.grupo-relatorio {
+    margin-bottom: 1.25rem;
+}
+
+.valor-resumo {
+    font-family: var(--sm-fonte-serifa);
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.tabela-relatorio {
+    --bs-table-bg: transparent;
+    margin-bottom: 0;
+}
+
+.tabela-relatorio {
+    min-width: 44rem;
+    table-layout: fixed;
+}
+
+.tabela-relatorio .coluna-titulo {
+    width: 28%;
+}
+
+.tabela-relatorio .coluna-editora {
+    width: 20%;
+}
+
+.tabela-relatorio .coluna-numero {
+    width: 8%;
+}
+
+.tabela-relatorio .coluna-assuntos {
+    width: 22%;
+}
+
+.tabela-relatorio .coluna-valor {
+    width: 14%;
+}
+
+.tabela-relatorio tfoot th,
+.tabela-relatorio tfoot td {
+    border-bottom: 0;
+}
+
 .pagina-erro {
     max-width: 40rem;
 }

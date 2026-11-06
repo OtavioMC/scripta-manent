@@ -23,6 +23,7 @@ use ScriptaManent\Http\Controller\Livro\ExcluirLivroController;
 use ScriptaManent\Http\Controller\Livro\FormularioDeLivroController;
 use ScriptaManent\Http\Controller\Livro\ListaDeLivrosController;
 use ScriptaManent\Http\Controller\Livro\SalvarLivroController;
+use ScriptaManent\Http\Controller\RelatorioController;
 use ScriptaManent\Http\Controller\RestaurarDadosDeExemploController;
 use ScriptaManent\Http\Controller\VersaoController;
 use ScriptaManent\Http\PaginaDeErro;
@@ -31,6 +32,7 @@ use ScriptaManent\Http\SessaoNativa;
 use ScriptaManent\Http\TratadorDeErros;
 use ScriptaManent\Http\Visao;
 use ScriptaManent\Infrastructure\Banco\Conexao;
+use ScriptaManent\Infrastructure\Banco\FonteDoRelatorioPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAssuntosPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAutoresPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeLivrosPdo;
@@ -88,6 +90,11 @@ return (static function (): RequestHandlerInterface {
             $sessao,
             $visao,
             $log,
+        )],
+        ['GET', '/relatorio', new RelatorioController(
+            $visao,
+            new FonteDoRelatorioPdo($conexao),
+            new DateTimeZone('America/Sao_Paulo'),
         )],
         ['GET', '/livros', new ListaDeLivrosController($visao, $livros, $sessao, $formularioDeLivro)],
         ['GET', '/livros/novo', $abrirLivro],
