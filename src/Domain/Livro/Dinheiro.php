@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace ScriptaManent\Domain\Livro;
 
+use ScriptaManent\Domain\ErroDeValidacao;
+
 final readonly class Dinheiro
 {
     public const int MAXIMO_EM_CENTAVOS = 9999999999;
     public const string VALOR_OBRIGATORIO = 'Informe o valor do livro.';
     public const string FORMATO = 'Valor precisa estar no formato 1.234,56.';
+    private const string PADRAO = '/\A(\d{1,3}(\.\d{3})*|\d+)(,\d{2})?\z/';
 
     private function __construct(public int $centavos)
     {
@@ -16,9 +19,24 @@ final readonly class Dinheiro
 
     public static function deTexto(string $texto): self
     {
-        [$inteiro, $fracao] = array_pad(explode(',', str_replace('.', '', $texto)), 2, '00');
+        $texto = trim(str_replace('R$', '', $texto));
 
-        return new self((int) $inteiro * 100 + (int) $fracao);
+        if ($texto === '') {
+            throw new ErroDeValidacao(['valor' => self::VALOR_OBRIGATORIO]);
+        }
+
+        if (preg_match(self::PADRAO, $texto) !== 1) {
+            throw new ErroDeValidacao(['valor' => self::FORMATO]);
+        }
+
+        [$inteiro, $fracao] = array_pad(explode(',', str_replace('.', '', $texto)), 2, '00');
+        $centavos = (int) $inteiro * 100 + (int) $fracao;
+
+        if (strlen(ltrim($inteiro, '0')) > 8 || $centavos > self::MAXIMO_EM_CENTAVOS) {
+            throw new ErroDeValidacao(['valor' => sprintf('Valor aceita até %s.', self::maximo()->formatado())]);
+        }
+
+        return new self($centavos);
     }
 
     public static function maximo(): self
