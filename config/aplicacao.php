@@ -52,6 +52,7 @@ use ScriptaManent\Infrastructure\Banco\RepositorioDeAssuntosPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeAutoresPdo;
 use ScriptaManent\Infrastructure\Banco\RepositorioDeLivrosPdo;
 use ScriptaManent\Infrastructure\Banco\RestauradorDeDadosPdo;
+use ScriptaManent\Infrastructure\Banco\TraduzErrosDoBanco;
 use ScriptaManent\Infrastructure\Cache\ArmazemRedis;
 use ScriptaManent\Infrastructure\Cache\FonteDoRelatorioEmCache;
 use ScriptaManent\Infrastructure\Cache\LeituraEmCache;
@@ -213,7 +214,11 @@ return static function (Sessao $sessao): RequestHandlerInterface {
     ]);
 
     return new TempoDeResposta(
-        new TratadorDeErros(new ExigeLogin($roteador, $acesso, $sessao, $visao), $paginaDeErro, $log),
+        new TratadorDeErros(
+            new TraduzErrosDoBanco(new ExigeLogin($roteador, $acesso, $sessao, $visao)),
+            $paginaDeErro,
+            $log,
+        ),
         $medicoes,
     );
 };
