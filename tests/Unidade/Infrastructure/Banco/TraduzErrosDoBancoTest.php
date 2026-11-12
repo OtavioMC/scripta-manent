@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 use ScriptaManent\Application\BancoIndisponivel;
 use ScriptaManent\Application\GravacaoEmConflito;
 use ScriptaManent\Infrastructure\Banco\TraduzErrosDoBanco;
@@ -60,6 +61,59 @@ final class TraduzErrosDoBancoTest extends TestCase
         $tradutor = new TraduzErrosDoBanco($this->aplicacaoQueResponde($resposta));
 
         self::assertSame($resposta, $tradutor->handle(new ServerRequest('GET', '/livros')));
+    }
+
+    public function testGuardaOErroOriginalDoMysqlParaOLog(): void
+    {
+        $original = self::erroDoMysql('HY000', 2006);
+        $tradutor = new TraduzErrosDoBanco($this->aplicacaoQueFalha($original));
+
+        try {
+            $tradutor->handle(new ServerRequest('GET', '/livros'));
+            self::fail('A conexão perdida deveria virar BancoIndisponivel.');
+        } catch (BancoIndisponivel $traduzido) {
+            self::assertSame($original, $traduzido->getPrevious());
+        }
+    }
+
+    public function testExclusaoBloqueadaPorChaveEstrangeiraSegueIntacta(): void
+    {
+        $original = self::erroDoMysql('23000', 1451);
+        $tradutor = new TraduzErrosDoBanco($this->aplicacaoQueFalha($original));
+
+        $this->expectExceptionObject($original);
+
+        $tradutor->handle(new ServerRequest('POST', '/autores/1/excluir'));
+    }
+
+    public function testCodigoConhecidoComOutroSqlstateSegueIntacto(): void
+    {
+        $original = self::erroDoMysql('23000', 2006);
+        $tradutor = new TraduzErrosDoBanco($this->aplicacaoQueFalha($original));
+
+        $this->expectExceptionObject($original);
+
+        $tradutor->handle(new ServerRequest('GET', '/livros'));
+    }
+
+    public function testErroDoPdoSemInformacaoDoMysqlSegueIntacto(): void
+    {
+        $original = new PDOException('falha sem errorInfo');
+        $tradutor = new TraduzErrosDoBanco($this->aplicacaoQueFalha($original));
+
+        $this->expectExceptionObject($original);
+
+        $tradutor->handle(new ServerRequest('GET', '/livros'));
+    }
+
+    public function testErroQueNaoVemDoBancoSegueIntacto(): void
+    {
+        $original = new RuntimeException('falha no template');
+        $tradutor = new TraduzErrosDoBanco($this->aplicacaoQueFalha($original));
+
+        $this->expectExceptionObject($original);
+
+        $tradutor->handle(new ServerRequest('GET', '/livros'));
     }
 
     private static function erroDoMysql(string $sqlstate, int $codigo): PDOException
