@@ -31,7 +31,7 @@ COPY banco/003-dados-exemplo.sql banco/
 COPY src/ src/
 USER www-data
 
-FROM nginx:1.30.6-alpine AS web
+FROM nginx:1.31.8-alpine AS web
 COPY docker/nginx/comum.conf /etc/nginx/comum.conf
 COPY docker/nginx/producao.conf /etc/nginx/conf.d/default.conf
 COPY --from=dependencias /app/vendor/twbs/bootstrap/dist/ /app/bootstrap/
