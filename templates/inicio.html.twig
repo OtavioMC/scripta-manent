@@ -110,7 +110,7 @@
                     <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancelar</button>
                     <form method="post" action="/dados-de-exemplo/restaurar">
                         {{ csrf.campo|raw }}
-                        <button class="btn btn-danger" type="submit">Restaurar dados</button>
+                        <button class="btn btn-danger" type="submit" data-enviando="Restaurando...">Restaurar dados</button>
                     </form>
                 </div>
             </div>
