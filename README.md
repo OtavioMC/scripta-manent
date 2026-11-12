@@ -73,6 +73,8 @@ No front não utilizei framework de componentização JavaScript. Foi utilizado 
 
 Os formulários já validam no navegador, com os atributos do próprio HTML e os mesmos limites do domínio, evitando que sejam enviadas requisições incorretas a mais pro servidor desnecessariamente.
 
+Depois de enviar, o botão fica travado até a próxima página carregar, pra um duplo clique não gravar a mesma coisa duas vezes. Se a validação ou a confirmação cancelarem o envio, o botão continua livre.
+
 ## Banco
 
 As tabelas seguem o modelo à risca, com os mesmos nomes, tipos, chaves e índices. Os únicos acréscimos são a coluna `Valor` no livro e a view do relatório. Tudo nasce dos scripts da pasta `banco/`, rodados no MySQL durante a subida.
@@ -164,6 +166,13 @@ docker compose run --rm php composer testes
 ```
 
 ## Versões
+
+### 1.2.0
+
+Evita o duplo envio dos formulários.
+
+- O botão de envio trava enquanto o formulário é enviado, em todas as telas e no login
+- Os botões de salvar, entrar e restaurar mostram "Salvando...", "Entrando..." e "Restaurando..." durante o envio
 
 ### 1.1.0
 

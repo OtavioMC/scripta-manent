@@ -39,7 +39,7 @@
 
 {% macro botoes(rotulo, enderecoDeVolta, emModal) %}
     <div class="d-flex flex-column flex-sm-row gap-2">
-        <button class="btn btn-destaque" type="submit">{{ rotulo }}</button>
+        <button class="btn btn-destaque" type="submit" data-enviando="Salvando...">{{ rotulo }}</button>
         {% if emModal %}
             <button class="btn btn-outline-primary" type="button" data-bs-dismiss="modal">Cancelar</button>
         {% else %}
