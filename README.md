@@ -113,6 +113,8 @@ VPS da Hetzner com Docker Compose, atrás da Cloudflare (DNS, HTTPS e um tunnel,
 
 O GitHub Actions roda lint, PHPStan, Deptrac, testes e `composer audit` em todo push. Nos pushes na `main`, gera a imagem e publica no GitHub Container Registry. Depois que eu aprovo, o servidor percebe a imagem nova em até um minuto, baixa e reinicia sozinho, sem nenhuma porta aberta para o GitHub.
 
+O Dependabot confere toda semana as versões dos pacotes PHP, das imagens Docker e das actions, e abre um pull request agrupado por tipo quando sai versão nova. Cada pull request passa pelo mesmo CI antes de eu decidir se entra. PHP e MySQL só recebem correções dentro da 8.4.
+
 O sistema pede login numa tela própria. A credencial fica na variável `NGINX_HTPASSWD` do `.env`, no formato `usuario:hash` gerado pelo `htpasswd`, e a sessão expira depois de 2 horas sem uso. Não tem tabela de usuários porque eu não queria mexer no modelo.
 
 O passo a passo do domínio, da VPS, do tunnel e do pipeline está na pasta [configuracoes-realizadas](configuracoes-realizadas).
