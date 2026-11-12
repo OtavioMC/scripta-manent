@@ -25,7 +25,7 @@ updates:
       - dependency-name: composer
         update-types: ['version-update:semver-major']
       - dependency-name: nginx
-        update-types: ['version-update:semver-major']
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
     groups:
       docker:
         patterns: ['*']
@@ -41,8 +41,10 @@ updates:
       - dependency-name: mysql
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: nginx
-        update-types: ['version-update:semver-major']
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: redis
+        update-types: ['version-update:semver-major']
+      - dependency-name: gotenberg/gotenberg
         update-types: ['version-update:semver-major']
     groups:
       docker-compose:
