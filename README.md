@@ -84,6 +84,19 @@ As tabelas seguem o modelo à risca, com os mesmos nomes, tipos, chaves e índic
 
 Um teste de integração compara o banco real com o modelo pelo `information_schema`. Esse teste precisa ser atualizado para qualquer adição ou remoção de tabelas no banco, do contrário o CI barrará a alteração.
 
+### Erros do banco
+
+Os erros do MySQL são identificados pelo SQLSTATE e pelo código, e cada um vira uma resposta própria.
+
+| Erro | Código | O que a pessoa vê |
+|---|---|---|
+| Excluir autor ou assunto com livro | 1451 | Modal com os livros vinculados |
+| Vincular autor ou assunto que acabou de ser excluído | 1452 | Mensagem no formulário |
+| Banco fora do ar ou conexão perdida no meio da operação | 2002, 2006 e 2013 | Página 503, sistema indisponível |
+| Deadlock ou espera por bloqueio esgotada | 1213 e 1205 | Página 503 dizendo que nada foi salvo e que dá pra enviar de novo |
+
+O log guarda o erro original do MySQL junto, pra dar pra saber o que aconteceu.
+
 ## Testes
 
 Testes com PHPUnit, em três níveis. As regras do domínio e o agrupamento do relatório foram feitos em TDD, com o teste commitado antes do código.
@@ -151,6 +164,14 @@ docker compose run --rm php composer testes
 ```
 
 ## Versões
+
+### 1.1.0
+
+Trata os erros temporários do banco.
+
+- Conexão perdida no meio da operação responde 503, como o banco fora do ar, em vez de 500
+- Deadlock e espera por bloqueio esgotada mostram uma página própria, dizendo que nada foi salvo
+- O log registra o erro original do MySQL junto da exceção
 
 ### 1.0.1
 

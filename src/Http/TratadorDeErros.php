@@ -9,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use ScriptaManent\Application\BancoIndisponivel;
+use ScriptaManent\Application\GravacaoEmConflito;
 use Throwable;
 
 final readonly class TratadorDeErros implements RequestHandlerInterface
@@ -36,6 +37,20 @@ final readonly class TratadorDeErros implements RequestHandlerInterface
                 'Sistema indisponível no momento',
                 'Os cadastros não puderam ser carregados agora.',
                 'Espere alguns minutos e recarregue a página.',
+            );
+        } catch (GravacaoEmConflito $erro) {
+            $this->log->warning('Gravação desfeita por conflito em {metodo} {caminho}', [
+                'exception' => $erro,
+                'metodo' => $request->getMethod(),
+                'caminho' => $request->getUri()->getPath(),
+            ]);
+
+            return $this->erros->responder(
+                503,
+                'Gravação não concluída',
+                'Outra alteração nos mesmos registros aconteceu ao mesmo tempo, e o banco desfez esta para não '
+                . 'misturar as duas. Nada foi salvo.',
+                'Volte, confira os dados e envie o formulário de novo.',
             );
         } catch (Throwable $erro) {
             $this->log->error('Falha ao responder {metodo} {caminho}', [

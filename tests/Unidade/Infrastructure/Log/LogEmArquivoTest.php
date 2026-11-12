@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ScriptaManent\Tests\Unidade\Infrastructure\Log;
 
+use PDOException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\InvalidArgumentException;
 use RuntimeException;
@@ -59,6 +60,21 @@ final class LogEmArquivoTest extends TestCase
         self::assertIsArray($excecao);
         self::assertSame(RuntimeException::class, $excecao['classe'] ?? null);
         self::assertSame('conexão recusada', $excecao['mensagem'] ?? null);
+    }
+
+    public function testRegistraOErroOriginalQueCausouAExcecao(): void
+    {
+        $original = new PDOException('SQLSTATE[40001]: Serialization failure: 1213 Deadlock found');
+        $traduzida = new RuntimeException('O MySQL desfez a transação.', 0, $original);
+
+        $this->log()->warning('Gravação desfeita', ['exception' => $traduzida]);
+
+        $excecao = $this->ultimoRegistro()['excecao'] ?? null;
+        self::assertIsArray($excecao);
+        $anterior = $excecao['anterior'] ?? null;
+        self::assertIsArray($anterior);
+        self::assertSame(PDOException::class, $anterior['classe'] ?? null);
+        self::assertSame('SQLSTATE[40001]: Serialization failure: 1213 Deadlock found', $anterior['mensagem'] ?? null);
     }
 
     public function testGuardaOsDemaisValoresDoContexto(): void

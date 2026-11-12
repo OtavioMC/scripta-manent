@@ -51,13 +51,7 @@ final class LogEmArquivo extends AbstractLogger
             'contexto' => array_map($this->valorRegistravel(...), $context),
         ];
         if ($excecao instanceof Throwable) {
-            $registro['excecao'] = [
-                'classe' => $excecao::class,
-                'mensagem' => $excecao->getMessage(),
-                'arquivo' => $excecao->getFile(),
-                'linha' => $excecao->getLine(),
-                'pilha' => $excecao->getTraceAsString(),
-            ];
+            $registro['excecao'] = [...$this->descricao($excecao), 'pilha' => $excecao->getTraceAsString()];
         }
 
         $linha = json_encode($registro, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE
@@ -65,6 +59,25 @@ final class LogEmArquivo extends AbstractLogger
         if (file_put_contents($this->destino, $linha, FILE_APPEND) === false) {
             error_log($linha);
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function descricao(Throwable $excecao): array
+    {
+        $descricao = [
+            'classe' => $excecao::class,
+            'mensagem' => $excecao->getMessage(),
+            'arquivo' => $excecao->getFile(),
+            'linha' => $excecao->getLine(),
+        ];
+        $anterior = $excecao->getPrevious();
+        if ($anterior !== null) {
+            $descricao['anterior'] = $this->descricao($anterior);
+        }
+
+        return $descricao;
     }
 
     /**

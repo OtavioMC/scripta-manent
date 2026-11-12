@@ -12,6 +12,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use ScriptaManent\Application\BancoIndisponivel;
+use ScriptaManent\Application\GravacaoEmConflito;
 use ScriptaManent\Http\RespostaDeErro;
 use ScriptaManent\Http\TratadorDeErros;
 use ScriptaManent\Tests\Duble\LogEmMemoria;
@@ -89,6 +90,28 @@ final class TratadorDeErrosTest extends TestCase
         $this->tratador($this->aplicacaoQueFalha($falha))->handle(new ServerRequest('GET', '/livros'));
 
         self::assertSame('critical', $this->log->registros[0]['nivel'] ?? null);
+        self::assertSame($falha, $this->log->registros[0]['contexto']['exception'] ?? null);
+    }
+
+    public function testConflitoDeGravacaoDizQueNadaFoiSalvo(): void
+    {
+        $falha = new GravacaoEmConflito('SQLSTATE[40001]: Deadlock found when trying to get lock');
+
+        $resposta = $this->tratador($this->aplicacaoQueFalha($falha))->handle(new ServerRequest('POST', '/livros'));
+
+        self::assertSame(503, $resposta->getStatusCode());
+        self::assertStringContainsString('Gravação não concluída', (string) $resposta->getBody());
+        self::assertStringContainsString('Nada foi salvo', (string) $resposta->getBody());
+        self::assertStringNotContainsString('SQLSTATE', (string) $resposta->getBody());
+    }
+
+    public function testConflitoDeGravacaoFicaRegistradoComoAviso(): void
+    {
+        $falha = new GravacaoEmConflito('Deadlock');
+
+        $this->tratador($this->aplicacaoQueFalha($falha))->handle(new ServerRequest('POST', '/livros'));
+
+        self::assertSame('warning', $this->log->registros[0]['nivel'] ?? null);
         self::assertSame($falha, $this->log->registros[0]['contexto']['exception'] ?? null);
     }
 
