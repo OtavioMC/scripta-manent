@@ -24,7 +24,7 @@ services:
         condition: service_started
 
   web:
-    image: nginx:1.30.6-alpine
+    image: nginx:1.31.8-alpine
     ports:
       - "127.0.0.1:8080:80"
     volumes:
@@ -51,7 +51,7 @@ services:
       retries: 60
 
   gotenberg:
-    image: gotenberg/gotenberg:8.38.1
+    image: gotenberg/gotenberg:9.3.0
     command:
       - gotenberg
       - --api-timeout=20s
@@ -59,7 +59,7 @@ services:
       - --chromium-allow-list=^file:///tmp/.*
 
   redis:
-    image: redis:8.10.1-alpine
+    image: redis:8.10.2-alpine
     command:
       - redis-server
       - --save
