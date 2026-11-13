@@ -106,20 +106,32 @@ final class TelasDeLivrosTest extends TestCase
         );
     }
 
-    public function testPaginasTemLinksParaAAnteriorEAProximaMantendoABusca(): void
+    public function testSetasLevamParaAAnteriorEAProximaMantendoABusca(): void
     {
         $this->inserirLivrosNumerados(2 * Pagina::ITENS + 1);
 
         $pagina = (string) $this->lista(['busca' => 'Livro', 'pagina' => '2'])->getBody();
 
         self::assertMatchesRegularExpression(
-            '#href="/livros\?busca=Livro&amp;pagina=1"[^>]*>Página anterior#',
+            '#href="/livros\?busca=Livro&amp;pagina=1"[^>]*aria-label="Página anterior"#',
             $pagina,
         );
         self::assertMatchesRegularExpression(
-            '#href="/livros\?busca=Livro&amp;pagina=3"[^>]*>Próxima página#',
+            '#href="/livros\?busca=Livro&amp;pagina=3"[^>]*aria-label="Próxima página"#',
             $pagina,
         );
+    }
+
+    public function testNavegacaoTemUmLinkParaCadaPaginaEMarcaAAtual(): void
+    {
+        $this->inserirLivrosNumerados(2 * Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Livro', 'pagina' => '2'])->getBody();
+
+        self::assertMatchesRegularExpression('#href="/livros\?busca=Livro&amp;pagina=1"[^>]*>1</a>#', $pagina);
+        self::assertMatchesRegularExpression('#href="/livros\?busca=Livro&amp;pagina=3"[^>]*>3</a>#', $pagina);
+        self::assertMatchesRegularExpression('#aria-current="page"[^>]*>\s*<span[^>]*>2</span>#', $pagina);
+        self::assertStringNotContainsString('pagina=4', $pagina);
     }
 
     public function testListaQueCabeNumaPaginaNaoMostraANavegacao(): void
