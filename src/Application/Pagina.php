@@ -14,7 +14,11 @@ final readonly class Pagina
 
     public static function daConsulta(string $texto): self
     {
-        return new self(max(1, (int) $texto));
+        if (!ctype_digit($texto)) {
+            return new self(1);
+        }
+
+        return new self(max(1, min((int) $texto, intdiv(PHP_INT_MAX, self::ITENS))));
     }
 
     public function deslocamento(): int
