@@ -24,42 +24,34 @@ final readonly class RepositorioDeLivrosEmCache implements RepositorioDeLivros
     {
         return $this->cache->lembrar(
             'livros',
-            $busca->texto ?? '',
+            'lista:' . ($busca->texto ?? ''),
             fn (): array => $this->repositorio->listar($busca),
-            static fn (array $livros): array => array_map(static fn (LivroNaLista $livro): array => [
-                'codigo' => $livro->codigo,
-                'titulo' => $livro->titulo,
-                'editora' => $livro->editora,
-                'edicao' => $livro->edicao,
-                'ano' => $livro->ano,
-                'centavos' => $livro->valor->centavos,
-                'autores' => $livro->autores,
-                'assuntos' => $livro->assuntos,
-                'codigosDosAutores' => $livro->codigosDosAutores,
-                'codigosDosAssuntos' => $livro->codigosDosAssuntos,
-            ], $livros),
-            static fn (mixed $dados): array => array_map(static function (mixed $item): LivroNaLista {
-                $registro = Dados::registro($item);
-
-                return new LivroNaLista(
-                    Dados::inteiro($registro, 'codigo'),
-                    Dados::texto($registro, 'titulo'),
-                    Dados::texto($registro, 'editora'),
-                    Dados::inteiro($registro, 'edicao'),
-                    Dados::texto($registro, 'ano'),
-                    Dinheiro::deCentavos(Dados::inteiro($registro, 'centavos')),
-                    Dados::textos($registro, 'autores'),
-                    Dados::textos($registro, 'assuntos'),
-                    Dados::inteiros($registro, 'codigosDosAutores'),
-                    Dados::inteiros($registro, 'codigosDosAssuntos'),
-                );
-            }, Dados::lista($dados)),
+            static fn (array $livros): array => array_map(self::paraDados(...), $livros),
+            static fn (mixed $dados): array => array_map(self::deDados(...), Dados::lista($dados)),
         );
     }
 
     public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
     {
-        return $this->repositorio->pagina($busca, $pagina);
+        return $this->cache->lembrar(
+            'livros',
+            sprintf('pagina:%d:%s', $pagina->numero, $busca->texto),
+            fn (): ListaPaginada => $this->repositorio->pagina($busca, $pagina),
+            static fn (ListaPaginada $lista): array => [
+                'itens' => array_map(self::paraDados(...), $lista->itens),
+                'totalDeItens' => $lista->totalDeItens,
+                'pagina' => $lista->pagina->numero,
+            ],
+            static function (mixed $dados): ListaPaginada {
+                $registro = Dados::registro($dados);
+
+                return new ListaPaginada(
+                    array_map(self::deDados(...), Dados::lista($registro['itens'] ?? null)),
+                    Dados::inteiro($registro, 'totalDeItens'),
+                    Pagina::pedidaNaUrl((string) Dados::inteiro($registro, 'pagina')),
+                );
+            },
+        );
     }
 
     public function buscar(int $codigo): ?Livro
@@ -85,5 +77,42 @@ final readonly class RepositorioDeLivrosEmCache implements RepositorioDeLivros
     {
         $this->repositorio->excluir($codigo);
         $this->cache->invalidar('livros', 'relatorio');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function paraDados(LivroNaLista $livro): array
+    {
+        return [
+            'codigo' => $livro->codigo,
+            'titulo' => $livro->titulo,
+            'editora' => $livro->editora,
+            'edicao' => $livro->edicao,
+            'ano' => $livro->ano,
+            'centavos' => $livro->valor->centavos,
+            'autores' => $livro->autores,
+            'assuntos' => $livro->assuntos,
+            'codigosDosAutores' => $livro->codigosDosAutores,
+            'codigosDosAssuntos' => $livro->codigosDosAssuntos,
+        ];
+    }
+
+    private static function deDados(mixed $item): LivroNaLista
+    {
+        $registro = Dados::registro($item);
+
+        return new LivroNaLista(
+            Dados::inteiro($registro, 'codigo'),
+            Dados::texto($registro, 'titulo'),
+            Dados::texto($registro, 'editora'),
+            Dados::inteiro($registro, 'edicao'),
+            Dados::texto($registro, 'ano'),
+            Dinheiro::deCentavos(Dados::inteiro($registro, 'centavos')),
+            Dados::textos($registro, 'autores'),
+            Dados::textos($registro, 'assuntos'),
+            Dados::inteiros($registro, 'codigosDosAutores'),
+            Dados::inteiros($registro, 'codigosDosAssuntos'),
+        );
     }
 }
