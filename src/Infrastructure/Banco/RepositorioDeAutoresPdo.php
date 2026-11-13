@@ -22,13 +22,8 @@ final readonly class RepositorioDeAutoresPdo implements RepositorioDeAutores
 
     public function listar(?Busca $busca = null): array
     {
-        $sql = 'SELECT CodAu, Nome FROM Autor';
-        $parametros = [];
-        if ($busca !== null && !$busca->vazia()) {
-            $sql .= ' WHERE Nome LIKE :nome';
-            $parametros['nome'] = Like::contendo($busca->texto);
-        }
-        $consulta = $this->conexao->pdo()->prepare($sql . ' ORDER BY Nome, CodAu');
+        [$filtro, $parametros] = $this->filtroDaBusca($busca);
+        $consulta = $this->conexao->pdo()->prepare('SELECT CodAu, Nome FROM Autor' . $filtro . ' ORDER BY Nome, CodAu');
         $consulta->execute($parametros);
 
         return array_values(array_map($this->autorDaLinha(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
@@ -36,7 +31,39 @@ final readonly class RepositorioDeAutoresPdo implements RepositorioDeAutores
 
     public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
     {
-        return new ListaPaginada([], 0, $pagina);
+        [$filtro, $parametros] = $this->filtroDaBusca($busca);
+        $contagem = $this->conexao->pdo()->prepare('SELECT COUNT(*) FROM Autor' . $filtro);
+        $contagem->execute($parametros);
+        $totalDeItens = (int) $contagem->fetchColumn();
+        $pagina = $pagina->semPassarDaUltima($totalDeItens);
+
+        $consulta = $this->conexao->pdo()->prepare(
+            'SELECT CodAu, Nome FROM Autor' . $filtro . ' ORDER BY Nome, CodAu LIMIT :quantidade OFFSET :pular',
+        );
+        foreach ($parametros as $nome => $valor) {
+            $consulta->bindValue($nome, $valor);
+        }
+        $consulta->bindValue('quantidade', Pagina::ITENS, PDO::PARAM_INT);
+        $consulta->bindValue('pular', $pagina->quantidadeDeItensAntes(), PDO::PARAM_INT);
+        $consulta->execute();
+
+        return new ListaPaginada(
+            array_values(array_map($this->autorDaLinha(...), $consulta->fetchAll(PDO::FETCH_ASSOC))),
+            $totalDeItens,
+            $pagina,
+        );
+    }
+
+    /**
+     * @return array{string, array<string, string>}
+     */
+    private function filtroDaBusca(?Busca $busca): array
+    {
+        if ($busca === null || $busca->vazia()) {
+            return ['', []];
+        }
+
+        return [' WHERE Nome LIKE :nome', ['nome' => Like::contendo($busca->texto)]];
     }
 
     public function buscar(int $codigo): ?Autor
