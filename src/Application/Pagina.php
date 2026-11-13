@@ -26,10 +26,13 @@ final readonly class Pagina
         return ($this->numero - 1) * self::ITENS;
     }
 
+    public static function ultimaPara(int $total): int
+    {
+        return max(1, intdiv($total + self::ITENS - 1, self::ITENS));
+    }
+
     public function limitadaA(int $total): self
     {
-        $ultima = max(1, intdiv($total + self::ITENS - 1, self::ITENS));
-
-        return new self(min($this->numero, $ultima));
+        return new self(min($this->numero, self::ultimaPara($total)));
     }
 }
