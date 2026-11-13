@@ -144,6 +144,33 @@ final class TelasDeLivrosTest extends TestCase
         self::assertSame('/livros?pagina=2', $resposta->getHeaderLine('Location'));
     }
 
+    public function testRedirecionamentoParaAUltimaPaginaMantemABusca(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $resposta = $this->lista(['busca' => 'Livro', 'pagina' => '99']);
+
+        self::assertSame('/livros?busca=Livro&pagina=2', $resposta->getHeaderLine('Location'));
+    }
+
+    public function testPaginaQueExisteNaoRedireciona(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        self::assertSame(200, $this->lista(['pagina' => '2'])->getStatusCode());
+    }
+
+    public function testAvisoDaUltimaGravacaoSobreviveAoRedirecionamento(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+        $this->sessao->guardar('aviso', 'Livro Dom Casmurro excluído.');
+
+        $this->lista(['pagina' => '99']);
+
+        $pagina = (string) $this->lista(['pagina' => '2'])->getBody();
+        self::assertStringContainsString('Livro Dom Casmurro excluído.', $pagina);
+    }
+
     public function testListaQueCabeNumaPaginaNaoMostraANavegacao(): void
     {
         $this->inserirLivrosNumerados(Pagina::ITENS);
