@@ -172,6 +172,43 @@ docker compose run --rm php composer camadas
 docker compose run --rm php composer testes
 ```
 
+### Depurar com o Xdebug
+
+O contêiner de desenvolvimento traz o Xdebug 3.5.3 desligado. A imagem de produção não tem a extensão.
+
+1. No VS Code, instale a extensão PHP Debug (`xdebug.php-debug`)
+2. Crie o arquivo `.vscode/launch.json`
+
+   ```json
+   {
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "name": "Xdebug no Docker",
+         "type": "php",
+         "request": "launch",
+         "port": 9003,
+         "pathMappings": { "/app": "${workspaceFolder}" }
+       }
+     ]
+   }
+   ```
+
+3. No `.env`, troque para `XDEBUG_MODE=debug` e recrie o contêiner
+
+   ```bash
+   docker compose up -d php
+   ```
+
+4. No VS Code, marque um ponto de parada e aperte F5
+5. Abra a página com `XDEBUG_TRIGGER=1` no endereço, como em http://localhost:8080/livros?XDEBUG_TRIGGER=1. Nos testes:
+
+   ```bash
+   docker compose exec -e XDEBUG_TRIGGER=1 php vendor/bin/phpunit --filter PaginaTest
+   ```
+
+6. Para desligar, volte para `XDEBUG_MODE=off` e rode `docker compose up -d php` de novo
+
 ## Versões
 
 ### 1.3.0

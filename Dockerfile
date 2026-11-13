@@ -6,6 +6,12 @@ RUN docker-php-ext-install pdo_mysql
 
 FROM base AS dev
 RUN apk add --no-cache git \
+    && apk add --no-cache --virtual .dependencias-do-xdebug $PHPIZE_DEPS linux-headers \
+    && pecl install xdebug-3.5.3 \
+    && docker-php-ext-enable xdebug \
+    && apk del .dependencias-do-xdebug \
+    && printf 'xdebug.mode = off\nxdebug.client_host = host.docker.internal\nxdebug.start_with_request = trigger\n' \
+        > "$PHP_INI_DIR/conf.d/zz-xdebug.ini" \
     && git config --system --add safe.directory /app \
     && cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 COPY --from=composer /usr/bin/composer /usr/bin/composer

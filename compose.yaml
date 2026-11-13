@@ -15,6 +15,9 @@ services:
       GOTENBERG_URL: http://gotenberg:3000
       REDIS_URL: tcp://redis:6379
       NGINX_HTPASSWD: ${NGINX_HTPASSWD:?rode sh bin/gerar-env para criar o .env}
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       mysql:
         condition: service_healthy
