@@ -94,6 +94,53 @@ final class TelasDeLivrosTest extends TestCase
         self::assertStringNotContainsString('Livro 01', $pagina);
     }
 
+    public function testPaginaDizQuaisLivrosEstaMostrando(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['pagina' => '2'])->getBody();
+
+        self::assertStringContainsString(
+            sprintf('Mostrando %1$d a %1$d de %1$d livros.', Pagina::ITENS + 1),
+            $pagina,
+        );
+    }
+
+    public function testPaginasTemLinksParaAAnteriorEAProximaMantendoABusca(): void
+    {
+        $this->inserirLivrosNumerados(2 * Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Livro', 'pagina' => '2'])->getBody();
+
+        self::assertMatchesRegularExpression(
+            '#href="/livros\?busca=Livro&amp;pagina=1"[^>]*>Página anterior#',
+            $pagina,
+        );
+        self::assertMatchesRegularExpression(
+            '#href="/livros\?busca=Livro&amp;pagina=3"[^>]*>Próxima página#',
+            $pagina,
+        );
+    }
+
+    public function testListaQueCabeNumaPaginaNaoMostraANavegacao(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS);
+
+        $pagina = (string) $this->lista()->getBody();
+
+        self::assertStringNotContainsString('Páginas da lista de livros', $pagina);
+        self::assertStringNotContainsString('Próxima página', $pagina);
+    }
+
+    public function testBuscaContaTodosOsLivrosEncontradosENaoSoOsDaPagina(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Livro'])->getBody();
+
+        self::assertStringContainsString(sprintf('%d livros encontrados para', Pagina::ITENS + 1), $pagina);
+    }
+
     public function testListaVaziaDizComoComecar(): void
     {
         self::assertStringContainsString('Nenhum livro cadastrado.', (string) $this->lista()->getBody());
