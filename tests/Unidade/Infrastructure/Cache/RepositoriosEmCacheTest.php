@@ -9,6 +9,7 @@ use RuntimeException;
 use ScriptaManent\Application\Busca;
 use ScriptaManent\Application\Cache\Medicoes;
 use ScriptaManent\Application\DadosDeExemplo\RestauradorDeDados;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Application\Relatorio\FonteDoRelatorio;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\Autor\Autor;
@@ -137,6 +138,16 @@ final class RepositoriosEmCacheTest extends TestCase
         self::assertSame(1, $this->livrosNoBanco->listagens);
     }
 
+    public function testPaginaDeLivrosVoltaDoCacheIgualADoBanco(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $doBanco = $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        self::assertEquals($doBanco, $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2')));
+        self::assertSame(1, $this->livrosNoBanco->listagens);
+    }
+
     public function testGravarLivroInvalidaLivrosERelatorioMasNaoAutores(): void
     {
         $antes = $this->cache->atuais();
@@ -249,6 +260,15 @@ final class RepositoriosEmCacheTest extends TestCase
 
         self::assertCount(4, $this->log->registros);
         self::assertSame('error', $this->log->registros[0]['nivel']);
+    }
+
+    private function inserirLivrosNumerados(int $quantidade): void
+    {
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $this->livrosNoBanco->inserir(
+                Livro::criar(null, sprintf('Livro %02d', $numero), 'Rocco', '1', '2020', '10,00', [], []),
+            );
+        }
     }
 
     private function restaurador(RestauradorDeDados $restauracao): RestauradorDeDadosEmCache
