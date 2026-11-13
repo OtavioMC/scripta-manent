@@ -6,6 +6,8 @@ namespace ScriptaManent\Tests\Duble;
 
 use ScriptaManent\Application\Assunto\RepositorioDeAssuntos;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 
@@ -40,6 +42,18 @@ final class RepositorioDeAssuntosEmMemoria implements RepositorioDeAssuntos
             static fn (Assunto $assunto): bool => $busca === null || $busca->vazia()
                 || mb_stripos($assunto->descricao, $busca->texto) !== false,
         ));
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        $encontrados = $this->listar($busca);
+        $pagina = $pagina->semPassarDaUltima(count($encontrados));
+
+        return new ListaPaginada(
+            array_slice($encontrados, $pagina->quantidadeDeItensAntes(), Pagina::ITENS),
+            count($encontrados),
+            $pagina,
+        );
     }
 
     public function buscar(int $codigo): ?Assunto

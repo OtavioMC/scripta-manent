@@ -6,6 +6,8 @@ namespace ScriptaManent\Infrastructure\Cache;
 
 use ScriptaManent\Application\Assunto\RepositorioDeAssuntos;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 
 final readonly class RepositorioDeAssuntosEmCache implements RepositorioDeAssuntos
@@ -35,6 +37,11 @@ final readonly class RepositorioDeAssuntosEmCache implements RepositorioDeAssunt
                 return Assunto::existente(Dados::inteiro($registro, 'codigo'), Dados::texto($registro, 'descricao'));
             }, Dados::lista($dados)),
         );
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        return $this->repositorio->pagina($busca, $pagina);
     }
 
     public function buscar(int $codigo): ?Assunto

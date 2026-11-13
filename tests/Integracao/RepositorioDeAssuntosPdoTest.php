@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ScriptaManent\Tests\Integracao;
 
 use PHPUnit\Framework\TestCase;
+use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use ScriptaManent\Infrastructure\Banco\Conexao;
@@ -108,6 +110,32 @@ final class RepositorioDeAssuntosPdoTest extends TestCase
         }
 
         self::assertNotNull($this->repositorio->buscar($assunto));
+    }
+
+    public function testSegundaPaginaTrazOsAssuntosDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirAssuntosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(Pagina::ITENS + 5, $lista->totalDeItens);
+        self::assertSame(
+            ['Zéfiro 21', 'Zéfiro 22', 'Zéfiro 23', 'Zéfiro 24', 'Zéfiro 25'],
+            array_map(static fn (Assunto $assunto): string => $assunto->descricao, $lista->itens),
+        );
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function inserirAssuntosNumerados(int $quantidade): array
+    {
+        $codigos = [];
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $codigos[] = (int) $this->repositorio->inserir(Assunto::novo(sprintf('Zéfiro %02d', $numero)))->codigo;
+        }
+
+        return $codigos;
     }
 
     private function livro(string $titulo): int

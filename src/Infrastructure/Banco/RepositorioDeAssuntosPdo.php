@@ -8,6 +8,8 @@ use PDO;
 use PDOException;
 use ScriptaManent\Application\Assunto\RepositorioDeAssuntos;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use UnexpectedValueException;
@@ -30,6 +32,11 @@ final readonly class RepositorioDeAssuntosPdo implements RepositorioDeAssuntos
         $consulta->execute($parametros);
 
         return array_values(array_map($this->assuntoDaLinha(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        return new ListaPaginada([], 0, $pagina);
     }
 
     public function buscar(int $codigo): ?Assunto
