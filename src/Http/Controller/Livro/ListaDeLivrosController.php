@@ -29,7 +29,7 @@ final readonly class ListaDeLivrosController implements RequestHandlerInterface
         $busca = Campos::busca($request);
 
         return $this->visao->responder('livros/lista.html.twig', [
-            'livros' => $this->cadastro->listar($busca),
+            'lista' => $this->cadastro->pagina($busca, Campos::pagina($request)),
             'busca' => $busca->texto,
             'aviso' => is_string($aviso) ? $aviso : null,
             'formulario' => $this->formulario->dadosVazios(),

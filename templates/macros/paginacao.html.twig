@@ -1,0 +1,23 @@
+{% macro endereco(acao, busca, numero) %}{{ acao }}?{{ (busca ? {busca: busca} : {})|merge({pagina: numero})|url_encode }}{% endmacro %}
+
+{% macro navegacao(acao, busca, lista, plural) %}
+    {% if lista.quantidadeDePaginas > 1 %}
+        <nav class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mt-3"
+             aria-label="Páginas da lista de {{ plural }}">
+            <p class="texto-suave mb-0">
+                Mostrando {{ lista.primeiroItemExibido }} a {{ lista.ultimoItemExibido }} de {{ lista.totalDeItens }} {{ plural }}.
+                Página {{ lista.pagina.numero }} de {{ lista.quantidadeDePaginas }}.
+            </p>
+            <div class="d-flex gap-2">
+                {% if lista.paginaAnterior is not null %}
+                    <a class="btn btn-sm btn-outline-primary" rel="prev"
+                       href="{{ _self.endereco(acao, busca, lista.paginaAnterior) }}">Página anterior</a>
+                {% endif %}
+                {% if lista.proximaPagina is not null %}
+                    <a class="btn btn-sm btn-outline-primary" rel="next"
+                       href="{{ _self.endereco(acao, busca, lista.proximaPagina) }}">Próxima página</a>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
+{% endmacro %}

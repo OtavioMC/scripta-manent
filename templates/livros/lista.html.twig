@@ -3,6 +3,7 @@
 {% block menu_ativo %}/livros{% endblock %}
 
 {% import 'macros/busca.html.twig' as busca_ %}
+{% import 'macros/paginacao.html.twig' as paginacao %}
 
 {% block colecao %}livros{% endblock %}
 
@@ -25,7 +26,8 @@
     {{ busca_.campo('/livros', busca, 'Buscar livros', 'Buscar por título, autor, assunto, editora ou ano') }}
 
     <div data-resultados>
-        {{ busca_.situacao('/livros', busca, livros|length, 'livro encontrado', 'livros encontrados') }}
+        {% set livros = lista.itens %}
+        {{ busca_.situacao('/livros', busca, lista.totalDeItens, 'livro encontrado', 'livros encontrados') }}
 
     {% if livros is empty and busca %}
         {{ busca_.nadaEncontrado(busca, '/livros', 'A busca procura no título, na editora, no ano e nos nomes de autores e assuntos.') }}
@@ -93,6 +95,7 @@
                 </table>
             </div>
         </div>
+        {{ paginacao.navegacao('/livros', busca, lista, 'livros') }}
     {% endif %}
     </div>
 

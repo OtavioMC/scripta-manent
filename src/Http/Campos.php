@@ -6,6 +6,7 @@ namespace ScriptaManent\Http;
 
 use Psr\Http\Message\ServerRequestInterface;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\Pagina;
 
 final class Campos
 {
@@ -45,6 +46,13 @@ final class Campos
         $valor = $request->getQueryParams()['busca'] ?? '';
 
         return Busca::deTexto(is_string($valor) ? $valor : '');
+    }
+
+    public static function pagina(ServerRequestInterface $request): Pagina
+    {
+        $valor = $request->getQueryParams()['pagina'] ?? '';
+
+        return Pagina::pedidaNaUrl(is_string($valor) ? $valor : '');
     }
 
     public static function texto(ServerRequestInterface $request, string $nome): string
