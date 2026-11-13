@@ -9,6 +9,7 @@ use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Http\Apresentador\FormularioDeAssuntoApresentador;
 use ScriptaManent\Http\Controller\Assunto\ExcluirAssuntoController;
@@ -79,6 +80,66 @@ final class TelasDeAssuntosTest extends TestCase
 
         self::assertStringContainsString('Assunto Poesia cadastrado.', (string) $this->lista()->getBody());
         self::assertStringNotContainsString('Assunto Poesia cadastrado.', (string) $this->lista()->getBody());
+    }
+
+    public function testSegundaPaginaMostraOsAssuntosDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirAssuntosNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['pagina' => '2'])->getBody();
+
+        self::assertStringContainsString(sprintf('Assunto %02d', Pagina::ITENS + 1), $pagina);
+        self::assertStringNotContainsString('Assunto 01', $pagina);
+        self::assertStringContainsString(
+            sprintf('Mostrando %1$d a %1$d de %1$d assuntos.', Pagina::ITENS + 1),
+            $pagina,
+        );
+    }
+
+    public function testNavegacaoDeAssuntosTemOsNumerosEMantemABusca(): void
+    {
+        $this->inserirAssuntosNumerados(2 * Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Assunto', 'pagina' => '2'])->getBody();
+
+        self::assertMatchesRegularExpression('#href="/assuntos\?busca=Assunto&amp;pagina=1"[^>]*>1</a>#', $pagina);
+        self::assertMatchesRegularExpression(
+            '#href="/assuntos\?busca=Assunto&amp;pagina=3"[^>]*aria-label="Próxima página"#',
+            $pagina,
+        );
+        self::assertStringContainsString('Páginas da lista de assuntos', $pagina);
+    }
+
+    public function testBuscaContaTodosOsAssuntosEncontradosENaoSoOsDaPagina(): void
+    {
+        $this->inserirAssuntosNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Assunto'])->getBody();
+
+        self::assertStringContainsString(sprintf('%d assuntos encontrados para', Pagina::ITENS + 1), $pagina);
+    }
+
+    public function testPaginaDeAssuntosAlemDaUltimaRedirecionaParaAUltimaMantendoABusca(): void
+    {
+        $this->inserirAssuntosNumerados(Pagina::ITENS + 1);
+
+        $resposta = $this->lista(['busca' => 'Assunto', 'pagina' => '99']);
+
+        self::assertSame(303, $resposta->getStatusCode());
+        self::assertSame('/assuntos?busca=Assunto&pagina=2', $resposta->getHeaderLine('Location'));
+    }
+
+    public function testAvisoSobreviveAoRedirecionamentoDaPaginaDeAssuntos(): void
+    {
+        $this->inserirAssuntosNumerados(Pagina::ITENS + 1);
+        $this->sessao->guardar('aviso', 'Assunto Crônica excluído.');
+
+        $this->lista(['pagina' => '99']);
+
+        self::assertStringContainsString(
+            'Assunto Crônica excluído.',
+            (string) $this->lista(['pagina' => '2'])->getBody(),
+        );
     }
 
     public function testFormularioUsaOLimiteDoDominioNoCampoDescricao(): void
@@ -179,10 +240,20 @@ final class TelasDeAssuntosTest extends TestCase
         self::assertSame(404, $this->excluir(999)->getStatusCode());
     }
 
-    private function lista(): ResponseInterface
+    private function inserirAssuntosNumerados(int $quantidade): void
+    {
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $this->repositorio->inserir(Assunto::novo(sprintf('Assunto %02d', $numero)));
+        }
+    }
+
+    /**
+     * @param array<string, string> $consulta
+     */
+    private function lista(array $consulta = []): ResponseInterface
     {
         return (new ListaDeAssuntosController($this->visao, $this->cadastro, $this->sessao, $this->formulario))
-            ->handle(new ServerRequest('GET', '/assuntos'));
+            ->handle((new ServerRequest('GET', '/assuntos'))->withQueryParams($consulta));
     }
 
     private function abrirFormulario(?int $codigo = null): ResponseInterface
