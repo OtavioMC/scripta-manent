@@ -25,11 +25,18 @@ final readonly class ListaDeLivrosController implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $aviso = $this->sessao->retirar('aviso');
         $busca = Campos::busca($request);
+        $pedida = Campos::pagina($request);
+        $lista = $this->cadastro->pagina($busca, $pedida);
+        if ($lista->pagina->numero !== $pedida->numero) {
+            $consulta = [...($busca->vazia() ? [] : ['busca' => $busca->texto]), 'pagina' => $lista->pagina->numero];
+
+            return $this->visao->redirecionar('/livros?' . http_build_query($consulta, '', '&', PHP_QUERY_RFC3986));
+        }
+        $aviso = $this->sessao->retirar('aviso');
 
         return $this->visao->responder('livros/lista.html.twig', [
-            'lista' => $this->cadastro->pagina($busca, Campos::pagina($request)),
+            'lista' => $lista,
             'busca' => $busca->texto,
             'aviso' => is_string($aviso) ? $aviso : null,
             'formulario' => $this->formulario->dadosVazios(),
