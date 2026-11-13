@@ -75,6 +75,54 @@ final class RepositoriosEmCacheTest extends TestCase
         self::assertSame(2, $this->autoresNoBanco->listagens);
     }
 
+    public function testPaginaDeAutoresVoltaDoCacheIgualADoBanco(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 1);
+
+        $doBanco = $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        self::assertEquals($doBanco, $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2')));
+        self::assertSame(1, $this->autoresNoBanco->listagens);
+    }
+
+    public function testPaginasDeAutoresFicamEmEntradasDiferentes(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 1);
+        $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'));
+        $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        $segunda = $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(
+            [sprintf('Autor %02d', Pagina::ITENS + 1)],
+            array_map(static fn (Autor $autor): string => $autor->nome, $segunda->itens),
+        );
+        self::assertSame(2, $this->autoresNoBanco->listagens);
+    }
+
+    public function testExcluirAutorFazAPaginaDeAutoresSerCalculadaDeNovo(): void
+    {
+        $codigos = $this->inserirAutoresNumerados(Pagina::ITENS + 1);
+        $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+        $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        $this->autores->excluir($codigos[Pagina::ITENS]);
+        $pagina = $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(1, $pagina->pagina->numero);
+        self::assertSame(2, $this->autoresNoBanco->listagens);
+    }
+
+    public function testListaEPaginaDeAutoresNaoDividemAMesmaEntrada(): void
+    {
+        $this->inserirAutoresNumerados(1);
+
+        $this->autores->listar(Busca::deTexto('pagina:1:'));
+
+        self::assertSame(1, $this->autores->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'))->totalDeItens);
+        self::assertSame([], $this->log->registros);
+    }
+
     public function testCadastrarAutorApareceNaListaEmSeguida(): void
     {
         $this->autores->listar();
@@ -303,6 +351,19 @@ final class RepositoriosEmCacheTest extends TestCase
 
         self::assertCount(4, $this->log->registros);
         self::assertSame('error', $this->log->registros[0]['nivel']);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function inserirAutoresNumerados(int $quantidade): array
+    {
+        $codigos = [];
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $codigos[] = (int) $this->autoresNoBanco->inserir(Autor::novo(sprintf('Autor %02d', $numero)))->codigo;
+        }
+
+        return $codigos;
     }
 
     /**
