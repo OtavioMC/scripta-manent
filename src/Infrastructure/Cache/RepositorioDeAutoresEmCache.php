@@ -22,23 +22,49 @@ final readonly class RepositorioDeAutoresEmCache implements RepositorioDeAutores
     {
         return $this->cache->lembrar(
             'autores',
-            $busca->texto ?? '',
+            'lista:' . ($busca->texto ?? ''),
             fn (): array => $this->repositorio->listar($busca),
-            static fn (array $autores): array => array_map(
-                static fn (Autor $autor): array => ['codigo' => $autor->codigo, 'nome' => $autor->nome],
-                $autores,
-            ),
-            static fn (mixed $dados): array => array_map(static function (mixed $item): Autor {
-                $registro = Dados::registro($item);
-
-                return Autor::existente(Dados::inteiro($registro, 'codigo'), Dados::texto($registro, 'nome'));
-            }, Dados::lista($dados)),
+            static fn (array $autores): array => array_map(self::paraDados(...), $autores),
+            static fn (mixed $dados): array => array_map(self::deDados(...), Dados::lista($dados)),
         );
     }
 
     public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
     {
-        return $this->repositorio->pagina($busca, $pagina);
+        return $this->cache->lembrar(
+            'autores',
+            sprintf('pagina:%d:%s', $pagina->numero, $busca->texto),
+            fn (): ListaPaginada => $this->repositorio->pagina($busca, $pagina),
+            static fn (ListaPaginada $lista): array => [
+                'itens' => array_map(self::paraDados(...), $lista->itens),
+                'totalDeItens' => $lista->totalDeItens,
+                'pagina' => $lista->pagina->numero,
+            ],
+            static function (mixed $dados): ListaPaginada {
+                $registro = Dados::registro($dados);
+
+                return new ListaPaginada(
+                    array_map(self::deDados(...), Dados::lista($registro['itens'] ?? null)),
+                    Dados::inteiro($registro, 'totalDeItens'),
+                    Pagina::pedidaNaUrl((string) Dados::inteiro($registro, 'pagina')),
+                );
+            },
+        );
+    }
+
+    /**
+     * @return array{codigo: int|null, nome: string}
+     */
+    private static function paraDados(Autor $autor): array
+    {
+        return ['codigo' => $autor->codigo, 'nome' => $autor->nome];
+    }
+
+    private static function deDados(mixed $item): Autor
+    {
+        $registro = Dados::registro($item);
+
+        return Autor::existente(Dados::inteiro($registro, 'codigo'), Dados::texto($registro, 'nome'));
     }
 
     public function buscar(int $codigo): ?Autor
