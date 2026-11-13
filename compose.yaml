@@ -54,7 +54,7 @@ services:
       retries: 60
 
   gotenberg:
-    image: gotenberg/gotenberg:8.38.1
+    image: gotenberg/gotenberg:8.40.0
     command:
       - gotenberg
       - --api-timeout=20s
@@ -62,7 +62,7 @@ services:
       - --chromium-allow-list=^file:///tmp/.*
 
   redis:
-    image: redis:8.10.1-alpine
+    image: redis:8.10.2-alpine
     command:
       - redis-server
       - --save
