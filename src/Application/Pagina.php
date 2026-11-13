@@ -16,4 +16,14 @@ final readonly class Pagina
     {
         return new self((int) $texto);
     }
+
+    public function deslocamento(): int
+    {
+        return 0;
+    }
+
+    public function limitadaA(int $total): self
+    {
+        return $this;
+    }
 }
