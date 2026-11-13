@@ -148,6 +148,49 @@ final class RepositoriosEmCacheTest extends TestCase
         self::assertSame(1, $this->livrosNoBanco->listagens);
     }
 
+    public function testPaginasDiferentesFicamEmEntradasDiferentes(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+        $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'));
+        $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        $primeira = $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'));
+        $segunda = $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        self::assertCount(Pagina::ITENS, $primeira->itens);
+        self::assertSame(
+            [sprintf('Livro %02d', Pagina::ITENS + 1)],
+            array_map(static fn ($livro): string => $livro->titulo, $segunda->itens),
+        );
+        self::assertSame(2, $this->livrosNoBanco->listagens);
+    }
+
+    public function testBuscasDiferentesNaPaginaFicamEmEntradasDiferentes(): void
+    {
+        $this->inserirLivrosNumerados(2);
+        $this->livros->pagina(Busca::deTexto('Livro 01'), Pagina::pedidaNaUrl('1'));
+        $this->livros->pagina(Busca::deTexto('Livro 02'), Pagina::pedidaNaUrl('1'));
+
+        $pagina = $this->livros->pagina(Busca::deTexto('Livro 02'), Pagina::pedidaNaUrl('1'));
+
+        self::assertSame(['Livro 02'], array_map(static fn ($livro): string => $livro->titulo, $pagina->itens));
+        self::assertSame(2, $this->livrosNoBanco->listagens);
+    }
+
+    public function testExcluirLivroFazAPaginaSerCalculadaDeNovo(): void
+    {
+        $codigos = $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+        $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+        $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        $this->livros->excluir($codigos[Pagina::ITENS]);
+        $pagina = $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(1, $pagina->pagina->numero);
+        self::assertSame(Pagina::ITENS, $pagina->totalDeItens);
+        self::assertSame(2, $this->livrosNoBanco->listagens);
+    }
+
     public function testGravarLivroInvalidaLivrosERelatorioMasNaoAutores(): void
     {
         $antes = $this->cache->atuais();
@@ -262,13 +305,19 @@ final class RepositoriosEmCacheTest extends TestCase
         self::assertSame('error', $this->log->registros[0]['nivel']);
     }
 
-    private function inserirLivrosNumerados(int $quantidade): void
+    /**
+     * @return list<int>
+     */
+    private function inserirLivrosNumerados(int $quantidade): array
     {
+        $codigos = [];
         for ($numero = 1; $numero <= $quantidade; $numero++) {
-            $this->livrosNoBanco->inserir(
+            $codigos[] = (int) $this->livrosNoBanco->inserir(
                 Livro::criar(null, sprintf('Livro %02d', $numero), 'Rocco', '1', '2020', '10,00', [], []),
-            );
+            )->codigo;
         }
+
+        return $codigos;
     }
 
     private function restaurador(RestauradorDeDados $restauracao): RestauradorDeDadosEmCache
