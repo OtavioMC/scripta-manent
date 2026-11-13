@@ -44,6 +44,26 @@ final class PaginaTest extends TestCase
         self::assertSame(1, Pagina::pedidaNaUrl('3')->semPassarDaUltima(0)->numero);
     }
 
+    public function testPaginaCheiaOcupaUmaPaginaSo(): void
+    {
+        self::assertSame(1, Pagina::quantidadeDePaginas(Pagina::ITENS));
+    }
+
+    public function testUmItemAlemDaPaginaCheiaAbreASegundaPagina(): void
+    {
+        self::assertSame(2, Pagina::quantidadeDePaginas(Pagina::ITENS + 1));
+    }
+
+    public function testDuasPaginasCheiasNaoAbremUmaTerceira(): void
+    {
+        self::assertSame(2, Pagina::quantidadeDePaginas(2 * Pagina::ITENS));
+    }
+
+    public function testSegundaPaginaDeUmaPaginaCheiaVoltaParaAPrimeira(): void
+    {
+        self::assertSame(1, Pagina::pedidaNaUrl('2')->semPassarDaUltima(Pagina::ITENS)->numero);
+    }
+
     public function testNumeroComLetrasVoltaParaAPrimeiraPagina(): void
     {
         self::assertSame(1, Pagina::pedidaNaUrl('2abc')->numero);
