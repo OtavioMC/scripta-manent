@@ -21,26 +21,26 @@ final readonly class ListaPaginada
 
     public function quantidadeDePaginas(): int
     {
-        return 0;
+        return Pagina::quantidadeDePaginas($this->totalDeItens);
     }
 
     public function paginaAnterior(): ?int
     {
-        return $this->totalDeItens === 0 ? null : $this->pagina->numero;
+        return $this->pagina->numero > 1 ? $this->pagina->numero - 1 : null;
     }
 
     public function proximaPagina(): ?int
     {
-        return $this->totalDeItens === 0 ? null : $this->pagina->numero;
+        return $this->pagina->numero < $this->quantidadeDePaginas() ? $this->pagina->numero + 1 : null;
     }
 
     public function primeiroItemExibido(): int
     {
-        return 0;
+        return $this->totalDeItens === 0 ? 0 : $this->pagina->quantidadeDeItensAntes() + 1;
     }
 
     public function ultimoItemExibido(): int
     {
-        return 0;
+        return min($this->pagina->quantidadeDeItensAntes() + Pagina::ITENS, $this->totalDeItens);
     }
 }
