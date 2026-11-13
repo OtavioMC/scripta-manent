@@ -14,16 +14,18 @@ final readonly class Pagina
 
     public static function daConsulta(string $texto): self
     {
-        return new self((int) $texto);
+        return new self(max(1, (int) $texto));
     }
 
     public function deslocamento(): int
     {
-        return 0;
+        return ($this->numero - 1) * self::ITENS;
     }
 
     public function limitadaA(int $total): self
     {
-        return $this;
+        $ultima = max(1, intdiv($total + self::ITENS - 1, self::ITENS));
+
+        return new self(min($this->numero, $ultima));
     }
 }
