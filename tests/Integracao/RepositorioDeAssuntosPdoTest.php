@@ -125,6 +125,47 @@ final class RepositorioDeAssuntosPdoTest extends TestCase
         );
     }
 
+    public function testPrimeiraPaginaTrazUmaPaginaCheiaEmOrdemDeDescricao(): void
+    {
+        $this->inserirAssuntosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('1'));
+
+        self::assertCount(Pagina::ITENS, $lista->itens);
+        self::assertSame('Zéfiro 01', $lista->itens[0]->descricao ?? null);
+    }
+
+    public function testPaginaAlemDaUltimaTrazAUltima(): void
+    {
+        $this->inserirAssuntosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('9'));
+
+        self::assertSame(2, $lista->pagina->numero);
+        self::assertCount(5, $lista->itens);
+    }
+
+    public function testExcluirOUnicoAssuntoDaSegundaPaginaVoltaParaAPrimeira(): void
+    {
+        $codigos = $this->inserirAssuntosNumerados(Pagina::ITENS + 1);
+        $this->repositorio->excluir($codigos[Pagina::ITENS]);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(1, $lista->pagina->numero);
+        self::assertSame(Pagina::ITENS, $lista->totalDeItens);
+        self::assertCount(Pagina::ITENS, $lista->itens);
+    }
+
+    public function testBuscaSemResultadoTrazPaginaVazia(): void
+    {
+        $lista = $this->repositorio->pagina(Busca::deTexto('nenhum assunto'), Pagina::pedidaNaUrl('3'));
+
+        self::assertSame(0, $lista->totalDeItens);
+        self::assertSame([], $lista->itens);
+        self::assertSame(1, $lista->pagina->numero);
+    }
+
     /**
      * @return list<int>
      */
