@@ -23,4 +23,24 @@ final readonly class ListaPaginada
     {
         return 0;
     }
+
+    public function paginaAnterior(): ?int
+    {
+        return $this->totalDeItens === 0 ? null : $this->pagina->numero;
+    }
+
+    public function proximaPagina(): ?int
+    {
+        return $this->totalDeItens === 0 ? null : $this->pagina->numero;
+    }
+
+    public function primeiroItemExibido(): int
+    {
+        return 0;
+    }
+
+    public function ultimoItemExibido(): int
+    {
+        return 0;
+    }
 }
