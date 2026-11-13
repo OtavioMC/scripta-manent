@@ -43,4 +43,19 @@ final class PaginaTest extends TestCase
     {
         self::assertSame(1, Pagina::daConsulta('3')->limitadaA(0)->numero);
     }
+
+    public function testNumeroComLetrasVoltaParaAPrimeiraPagina(): void
+    {
+        self::assertSame(1, Pagina::daConsulta('2abc')->numero);
+    }
+
+    public function testNumeroNegativoVoltaParaAPrimeiraPagina(): void
+    {
+        self::assertSame(1, Pagina::daConsulta('-3')->numero);
+    }
+
+    public function testNumeroEnormeNaoEstouraODeslocamento(): void
+    {
+        self::assertGreaterThan(0, Pagina::daConsulta('99999999999999999999')->deslocamento());
+    }
 }
