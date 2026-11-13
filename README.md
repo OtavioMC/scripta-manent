@@ -211,6 +211,13 @@ O contêiner de desenvolvimento traz o Xdebug 3.5.3 desligado. A imagem de produ
 
 ## Versões
 
+### 1.3.1
+
+Adiciona o Xdebug ao ambiente de desenvolvimento.
+
+- O contêiner de desenvolvimento traz o Xdebug desligado, ligado pelo `XDEBUG_MODE` no `.env`
+- O pipeline barra a publicação se a imagem de produção carregar o Xdebug
+
 ### 1.3.0
 
 Pagina as listas de livros, autores e assuntos.

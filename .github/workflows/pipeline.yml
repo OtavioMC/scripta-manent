@@ -51,6 +51,12 @@ jobs:
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
           tags: ghcr.io/otaviomc/scripta-manent-${{ matrix.alvo }}:${{ github.sha }}
+      - if: matrix.alvo == 'php'
+        run: |
+          if docker run --rm ghcr.io/otaviomc/scripta-manent-php:${{ github.sha }} php -m | grep -qi xdebug; then
+            echo "A imagem de produção carrega o Xdebug."
+            exit 1
+          fi
 
   promover:
     needs: publicar
