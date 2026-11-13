@@ -137,6 +137,35 @@ body {
     --bs-btn-hover-border-color: #9a3412;
 }
 
+.paginacao {
+    --bs-pagination-color: var(--sm-vinho);
+    --bs-pagination-bg: var(--sm-cartao);
+    --bs-pagination-border-color: var(--sm-cobre);
+    --bs-pagination-hover-color: #ffffff;
+    --bs-pagination-hover-bg: var(--sm-vinho);
+    --bs-pagination-hover-border-color: var(--sm-vinho);
+    --bs-pagination-focus-color: var(--sm-vinho);
+    --bs-pagination-focus-bg: var(--sm-cartao);
+    --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(180, 83, 9, 0.4);
+    --bs-pagination-active-color: #ffffff;
+    --bs-pagination-active-bg: var(--sm-vinho);
+    --bs-pagination-active-border-color: var(--sm-vinho);
+    --bs-pagination-disabled-color: var(--sm-texto-suave);
+    --bs-pagination-disabled-bg: var(--sm-cartao);
+    --bs-pagination-disabled-border-color: var(--sm-cobre);
+}
+
+[data-bs-theme="dark"] .paginacao {
+    --bs-pagination-color: #f5c48b;
+    --bs-pagination-border-color: #d97706;
+    --bs-pagination-hover-bg: #9a3412;
+    --bs-pagination-hover-border-color: #9a3412;
+    --bs-pagination-focus-color: #f5c48b;
+    --bs-pagination-active-bg: #9a3412;
+    --bs-pagination-active-border-color: #9a3412;
+    --bs-pagination-disabled-border-color: #d97706;
+}
+
 .btn-destaque {
     --bs-btn-color: #ffffff;
     --bs-btn-hover-color: #ffffff;
