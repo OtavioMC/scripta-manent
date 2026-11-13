@@ -11,51 +11,51 @@ final class PaginaTest extends TestCase
 {
     public function testSemNumeroNaConsultaComecaNaPrimeiraPagina(): void
     {
-        self::assertSame(1, Pagina::daConsulta('')->numero);
+        self::assertSame(1, Pagina::pedidaNaUrl('')->numero);
     }
 
     public function testNumeroDaConsultaViraAPagina(): void
     {
-        self::assertSame(3, Pagina::daConsulta('3')->numero);
+        self::assertSame(3, Pagina::pedidaNaUrl('3')->numero);
     }
 
     public function testPrimeiraPaginaComecaNoPrimeiroItem(): void
     {
-        self::assertSame(0, Pagina::daConsulta('1')->deslocamento());
+        self::assertSame(0, Pagina::pedidaNaUrl('1')->quantidadeDeItensAntes());
     }
 
-    public function testDeslocamentoPulaOsItensDasPaginasAnteriores(): void
+    public function testPaginaPulaOsItensDasPaginasAnteriores(): void
     {
-        self::assertSame(2 * Pagina::ITENS, Pagina::daConsulta('3')->deslocamento());
+        self::assertSame(2 * Pagina::ITENS, Pagina::pedidaNaUrl('3')->quantidadeDeItensAntes());
     }
 
     public function testPaginaDentroDoTotalContinuaIgual(): void
     {
-        self::assertSame(2, Pagina::daConsulta('2')->limitadaA(3 * Pagina::ITENS)->numero);
+        self::assertSame(2, Pagina::pedidaNaUrl('2')->semPassarDaUltima(3 * Pagina::ITENS)->numero);
     }
 
     public function testPaginaAlemDaUltimaVoltaParaAUltima(): void
     {
-        self::assertSame(4, Pagina::daConsulta('9')->limitadaA(3 * Pagina::ITENS + 1)->numero);
+        self::assertSame(4, Pagina::pedidaNaUrl('9')->semPassarDaUltima(3 * Pagina::ITENS + 1)->numero);
     }
 
     public function testListaVaziaFicaNaPrimeiraPagina(): void
     {
-        self::assertSame(1, Pagina::daConsulta('3')->limitadaA(0)->numero);
+        self::assertSame(1, Pagina::pedidaNaUrl('3')->semPassarDaUltima(0)->numero);
     }
 
     public function testNumeroComLetrasVoltaParaAPrimeiraPagina(): void
     {
-        self::assertSame(1, Pagina::daConsulta('2abc')->numero);
+        self::assertSame(1, Pagina::pedidaNaUrl('2abc')->numero);
     }
 
     public function testNumeroNegativoVoltaParaAPrimeiraPagina(): void
     {
-        self::assertSame(1, Pagina::daConsulta('-3')->numero);
+        self::assertSame(1, Pagina::pedidaNaUrl('-3')->numero);
     }
 
-    public function testNumeroEnormeNaoEstouraODeslocamento(): void
+    public function testNumeroEnormeNaoEstouraAQuantidadeDeItensAntes(): void
     {
-        self::assertGreaterThan(0, Pagina::daConsulta('99999999999999999999')->deslocamento());
+        self::assertGreaterThan(0, Pagina::pedidaNaUrl('99999999999999999999')->quantidadeDeItensAntes());
     }
 }

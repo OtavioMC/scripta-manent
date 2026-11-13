@@ -12,7 +12,7 @@ final readonly class Pagina
     {
     }
 
-    public static function daConsulta(string $texto): self
+    public static function pedidaNaUrl(string $texto): self
     {
         if (!ctype_digit($texto)) {
             return new self(1);
@@ -21,18 +21,18 @@ final readonly class Pagina
         return new self(max(1, min((int) $texto, intdiv(PHP_INT_MAX, self::ITENS))));
     }
 
-    public function deslocamento(): int
+    public function quantidadeDeItensAntes(): int
     {
         return ($this->numero - 1) * self::ITENS;
     }
 
-    public static function ultimaPara(int $total): int
+    public static function quantidadeDePaginas(int $totalDeItens): int
     {
-        return max(1, intdiv($total + self::ITENS - 1, self::ITENS));
+        return max(1, intdiv($totalDeItens + self::ITENS - 1, self::ITENS));
     }
 
-    public function limitadaA(int $total): self
+    public function semPassarDaUltima(int $totalDeItens): self
     {
-        return new self(min($this->numero, self::ultimaPara($total)));
+        return new self(min($this->numero, self::quantidadeDePaginas($totalDeItens)));
     }
 }
