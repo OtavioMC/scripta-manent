@@ -6,6 +6,8 @@ namespace ScriptaManent\Tests\Integracao;
 
 use PHPUnit\Framework\TestCase;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\Livro\LivroNaLista;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\ErroDeValidacao;
 use ScriptaManent\Domain\Livro\Livro;
 use ScriptaManent\Infrastructure\Banco\Conexao;
@@ -154,6 +156,35 @@ final class RepositorioDeLivrosPdoTest extends TestCase
         $this->repositorio->inserir(
             Livro::criar(null, 'Manual do Jardim', 'Horizonte', '1', '2020', '50,00', [999999], []),
         );
+    }
+
+    public function testSegundaPaginaTrazOsLivrosDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(Pagina::ITENS + 5, $lista->totalDeItens);
+        self::assertSame(
+            ['Zéfiro 21', 'Zéfiro 22', 'Zéfiro 23', 'Zéfiro 24', 'Zéfiro 25'],
+            array_map(static fn (LivroNaLista $livro): string => $livro->titulo, $lista->itens),
+        );
+    }
+
+    private function inserirLivrosNumerados(int $quantidade): void
+    {
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $this->repositorio->inserir(Livro::criar(
+                null,
+                sprintf('Zéfiro %02d', $numero),
+                'Horizonte',
+                '1',
+                '2020',
+                '10,00',
+                [],
+                [],
+            ));
+        }
     }
 
     private function autor(string $nome): int

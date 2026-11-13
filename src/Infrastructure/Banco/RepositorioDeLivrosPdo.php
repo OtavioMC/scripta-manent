@@ -7,8 +7,10 @@ namespace ScriptaManent\Infrastructure\Banco;
 use PDO;
 use PDOException;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
 use ScriptaManent\Application\Livro\LivroNaLista;
 use ScriptaManent\Application\Livro\RepositorioDeLivros;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\ErroDeValidacao;
 use ScriptaManent\Domain\Livro\Dinheiro;
 use ScriptaManent\Domain\Livro\Livro;
@@ -60,6 +62,11 @@ final readonly class RepositorioDeLivrosPdo implements RepositorioDeLivros
         $consulta->execute($parametros);
 
         return array_values(array_map($this->livroNaLista(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        return new ListaPaginada([], 0, $pagina);
     }
 
     public function buscar(int $codigo): ?Livro

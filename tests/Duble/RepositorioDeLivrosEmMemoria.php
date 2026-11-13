@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace ScriptaManent\Tests\Duble;
 
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
 use ScriptaManent\Application\Livro\LivroNaLista;
 use ScriptaManent\Application\Livro\RepositorioDeLivros;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Livro\Livro;
 
 final class RepositorioDeLivrosEmMemoria implements RepositorioDeLivros
@@ -47,6 +49,18 @@ final class RepositorioDeLivrosEmMemoria implements RepositorioDeLivros
                 || mb_stripos(implode(' ', [$livro->titulo, ...$livro->autores, ...$livro->assuntos]), $busca->texto)
                     !== false,
         ));
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        $todos = $this->listar($busca);
+        $pagina = $pagina->semPassarDaUltima(count($todos));
+
+        return new ListaPaginada(
+            array_slice($todos, $pagina->quantidadeDeItensAntes(), Pagina::ITENS),
+            count($todos),
+            $pagina,
+        );
     }
 
     public function buscar(int $codigo): ?Livro

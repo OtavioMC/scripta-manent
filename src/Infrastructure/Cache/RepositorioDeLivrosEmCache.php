@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace ScriptaManent\Infrastructure\Cache;
 
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
 use ScriptaManent\Application\Livro\LivroNaLista;
 use ScriptaManent\Application\Livro\RepositorioDeLivros;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Livro\Dinheiro;
 use ScriptaManent\Domain\Livro\Livro;
 
@@ -53,6 +55,11 @@ final readonly class RepositorioDeLivrosEmCache implements RepositorioDeLivros
                 );
             }, Dados::lista($dados)),
         );
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        return $this->repositorio->pagina($busca, $pagina);
     }
 
     public function buscar(int $codigo): ?Livro
