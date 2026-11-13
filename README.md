@@ -55,6 +55,11 @@ O cabeçalho `Server-Timing` mostra de onde veio cada leitura e quanto tempo lev
 
 Com poucos livros o ganho é pequeno, porque o MySQL já é rápido. Com volume ele aparece, principalmente na busca, que precisa varrer a tabela.
 
+### Paginação
+
+Livros, autores e assuntos aparecem em páginas de 20, em ordem alfabética. O banco devolve só a página pedida, com `LIMIT` e `OFFSET`, e um `COUNT` com o mesmo filtro da busca dá o total. A página fica no endereço, como em `/livros?busca=machado&pagina=2`.
+
+
 ## Arquitetura
 
 Clean Architecture no backend
@@ -168,6 +173,15 @@ docker compose run --rm php composer testes
 ```
 
 ## Versões
+
+### 1.3.0
+
+Pagina as listas de livros, autores e assuntos.
+
+- 20 itens por página, com números de página, setas e o intervalo mostrado
+- A busca continua no endereço ao trocar de página, e uma página além da última redireciona para a última
+- Cada página fica no cache do Redis e é invalidada a cada gravação
+- Os dados de exemplo passam a ter 62 livros, 43 autores e 13 assuntos
 
 ### 1.2.0
 

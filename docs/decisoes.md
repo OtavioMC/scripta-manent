@@ -24,6 +24,10 @@ Crystal e ReportViewer são do mundo .NET, então em PHP montei com template e g
 
 O Redis guarda as listas, as buscas e o relatório. Cada coleção tem um número de versão que entra na chave, e toda gravação sobe esse número, então o cache velho deixa de ser lido na hora sem eu precisar apagar nada. Se o Redis cair, o sistema segue pelo MySQL. Com 12 livros quase não muda nada, mas com 5 mil a busca no relatório caiu de 89 ms pra 5 ms.
 
+## Paginação
+
+Paginei no banco, com `LIMIT` e `OFFSET` e um `COUNT` com o mesmo filtro da busca, pra não trazer a tabela inteira a cada tela. Com poucos milhares de livros o `OFFSET` não pesa; com milhões eu trocaria por paginação pela chave, mas aí a página deixa de ter número. O relatório ficou sem paginação porque o total geral e a seção de coautoria precisam de todos os livros. Uma página além da última redireciona pra última, assim o endereço sempre diz a página que está na tela.
+
 ## Login
 
 Como não dava pra criar tabela de usuários, a credencial ficou no `.env`. Comecei com a senha no nginx, mas troquei por uma tela própria porque a janela do navegador não tem botão de sair, não expira sessão e não deixa bloquear quem erra demais. Não fiz um administrador separado: quem entra pode restaurar os dados de exemplo, com confirmação e registro no log.
