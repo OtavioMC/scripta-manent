@@ -40,6 +40,45 @@ final class ListaPaginadaTest extends TestCase
         self::assertSame([1, 2, 3, 4], self::lista(3 * Pagina::ITENS + 1, '2')->paginasNaNavegacao());
     }
 
+    public function testUmaPaginaSoMostraSoONumeroUm(): void
+    {
+        self::assertSame([1], self::lista(Pagina::ITENS, '1')->paginasNaNavegacao());
+    }
+
+    public function testDuasPaginasMostramSoUmEDois(): void
+    {
+        self::assertSame([1, 2], self::lista(Pagina::ITENS + 1, '2')->paginasNaNavegacao());
+    }
+
+    public function testPaginaNoMeioDeMuitasMostraAsVizinhasEReticenciasNosSaltos(): void
+    {
+        self::assertSame([1, null, 4, 5, 6, null, 10], self::lista(10 * Pagina::ITENS, '5')->paginasNaNavegacao());
+    }
+
+    public function testPrimeiraPaginaDeMuitasMostraASegundaEAUltima(): void
+    {
+        self::assertSame([1, 2, null, 10], self::lista(10 * Pagina::ITENS, '1')->paginasNaNavegacao());
+    }
+
+    public function testUltimaPaginaDeMuitasMostraAPrimeiraEAPenultima(): void
+    {
+        self::assertSame([1, null, 9, 10], self::lista(10 * Pagina::ITENS, '10')->paginasNaNavegacao());
+    }
+
+    public function testSaltoDeUmaPaginaSoMostraONumeroNoLugarDasReticencias(): void
+    {
+        self::assertSame([1, 2, 3, 4, 5, null, 10], self::lista(10 * Pagina::ITENS, '4')->paginasNaNavegacao());
+    }
+
+    public function testNenhumNumeroPassaDaUltimaPagina(): void
+    {
+        for ($pagina = 1; $pagina <= 10; $pagina++) {
+            $numeros = array_filter(self::lista(10 * Pagina::ITENS, (string) $pagina)->paginasNaNavegacao());
+
+            self::assertSame(10, max([0, ...$numeros]), sprintf('Página %d', $pagina));
+        }
+    }
+
     public function testSegundaPaginaExibeOsItensDepoisDaPrimeiraPaginaCheia(): void
     {
         $lista = self::lista(3 * Pagina::ITENS + 1, '2');
