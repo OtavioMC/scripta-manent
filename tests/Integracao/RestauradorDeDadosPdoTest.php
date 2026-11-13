@@ -32,7 +32,7 @@ final class RestauradorDeDadosPdoTest extends TestCase
         self::assertSame([], ConexaoDeTeste::consultar('SELECT CodAu FROM Autor WHERE CodAu = :autor', [
             'autor' => $autor,
         ]));
-        self::assertSame([['livros' => '12', 'autores' => '13', 'assuntos' => '9']], ConexaoDeTeste::consultar(
+        self::assertSame([['livros' => '62', 'autores' => '43', 'assuntos' => '13']], ConexaoDeTeste::consultar(
             'SELECT (SELECT COUNT(*) FROM Livro) AS livros, (SELECT COUNT(*) FROM Autor) AS autores,
                 (SELECT COUNT(*) FROM Assunto) AS assuntos',
         ));

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ScriptaManent\Application\Assunto;
 
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\ErroDeValidacao;
 use ScriptaManent\Domain\ExclusaoBloqueada;
@@ -21,6 +23,14 @@ final readonly class CadastroDeAssuntos
     public function listar(?Busca $busca = null): array
     {
         return $this->repositorio->listar($busca);
+    }
+
+    /**
+     * @return ListaPaginada<Assunto>
+     */
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        return $this->repositorio->pagina($busca, $pagina);
     }
 
     public function buscar(int $codigo): ?Assunto

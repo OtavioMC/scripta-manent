@@ -55,6 +55,11 @@ O cabeçalho `Server-Timing` mostra de onde veio cada leitura e quanto tempo lev
 
 Com poucos livros o ganho é pequeno, porque o MySQL já é rápido. Com volume ele aparece, principalmente na busca, que precisa varrer a tabela.
 
+### Paginação
+
+Livros, autores e assuntos aparecem em páginas de 20, em ordem alfabética. O banco devolve só a página pedida, com `LIMIT` e `OFFSET`, e um `COUNT` com o mesmo filtro da busca dá o total. A página fica no endereço, como em `/livros?busca=machado&pagina=2`.
+
+
 ## Arquitetura
 
 Clean Architecture no backend
@@ -82,7 +87,7 @@ As tabelas seguem o modelo à risca, com os mesmos nomes, tipos, chaves e índic
 - `000-usuario-aplicacao.sh` cria o usuário da aplicação, que lê e grava dados mas não cria nem altera tabelas
 - `001-tabelas.sql` cria as tabelas, com chaves estrangeiras sem cascata, então autor ou assunto com livro vinculado não pode ser excluído
 - `002-view-relatorio.sql` cria a `vw_livros_por_autor`, com uma linha por autor e livro, incluindo os livros sem autor
-- `003-dados-exemplo.sql` carrega 12 livros de exemplo, com casos de coautoria, livro sem autor e livro sem assunto
+- `003-dados-exemplo.sql` carrega 62 livros de exemplo, de 43 autores e 13 assuntos, com casos de coautoria, livro sem autor, livro sem assunto, autor sem livro e assunto sem livro
 
 Um teste de integração compara o banco real com o modelo pelo `information_schema`. Esse teste precisa ser atualizado para qualquer adição ou remoção de tabelas no banco, do contrário o CI barrará a alteração.
 
@@ -168,6 +173,15 @@ docker compose run --rm php composer testes
 ```
 
 ## Versões
+
+### 1.3.0
+
+Pagina as listas de livros, autores e assuntos.
+
+- 20 itens por página, com números de página, setas e o intervalo mostrado
+- A busca continua no endereço ao trocar de página, e uma página além da última redireciona para a última
+- Cada página fica no cache do Redis e é invalidada a cada gravação
+- Os dados de exemplo passam a ter 62 livros, 43 autores e 13 assuntos
 
 ### 1.2.0
 

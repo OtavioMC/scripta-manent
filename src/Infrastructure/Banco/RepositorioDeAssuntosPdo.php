@@ -8,6 +8,8 @@ use PDO;
 use PDOException;
 use ScriptaManent\Application\Assunto\RepositorioDeAssuntos;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use UnexpectedValueException;
@@ -20,16 +22,51 @@ final readonly class RepositorioDeAssuntosPdo implements RepositorioDeAssuntos
 
     public function listar(?Busca $busca = null): array
     {
-        $sql = 'SELECT codAs, Descricao FROM Assunto';
-        $parametros = [];
-        if ($busca !== null && !$busca->vazia()) {
-            $sql .= ' WHERE Descricao LIKE :descricao';
-            $parametros['descricao'] = Like::contendo($busca->texto);
-        }
-        $consulta = $this->conexao->pdo()->prepare($sql . ' ORDER BY Descricao, codAs');
+        [$filtro, $parametros] = $this->filtroDaBusca($busca);
+        $consulta = $this->conexao->pdo()->prepare(
+            'SELECT codAs, Descricao FROM Assunto' . $filtro . ' ORDER BY Descricao, codAs',
+        );
         $consulta->execute($parametros);
 
         return array_values(array_map($this->assuntoDaLinha(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        [$filtro, $parametros] = $this->filtroDaBusca($busca);
+        $contagem = $this->conexao->pdo()->prepare('SELECT COUNT(*) FROM Assunto' . $filtro);
+        $contagem->execute($parametros);
+        $totalDeItens = (int) $contagem->fetchColumn();
+        $pagina = $pagina->semPassarDaUltima($totalDeItens);
+
+        $consulta = $this->conexao->pdo()->prepare(
+            'SELECT codAs, Descricao FROM Assunto' . $filtro
+                . ' ORDER BY Descricao, codAs LIMIT :quantidade OFFSET :pular',
+        );
+        foreach ($parametros as $nome => $valor) {
+            $consulta->bindValue($nome, $valor);
+        }
+        $consulta->bindValue('quantidade', Pagina::ITENS, PDO::PARAM_INT);
+        $consulta->bindValue('pular', $pagina->quantidadeDeItensAntes(), PDO::PARAM_INT);
+        $consulta->execute();
+
+        return new ListaPaginada(
+            array_values(array_map($this->assuntoDaLinha(...), $consulta->fetchAll(PDO::FETCH_ASSOC))),
+            $totalDeItens,
+            $pagina,
+        );
+    }
+
+    /**
+     * @return array{string, array<string, string>}
+     */
+    private function filtroDaBusca(?Busca $busca): array
+    {
+        if ($busca === null || $busca->vazia()) {
+            return ['', []];
+        }
+
+        return [' WHERE Descricao LIKE :descricao', ['descricao' => Like::contendo($busca->texto)]];
     }
 
     public function buscar(int $codigo): ?Assunto

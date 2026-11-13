@@ -10,7 +10,9 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Application\Livro\CadastroDeLivros;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\Livro\Livro;
@@ -83,6 +85,112 @@ final class TelasDeLivrosTest extends TestCase
         self::assertStringContainsString(sprintf('&quot;autores&quot;:[%d]', $autor), $pagina);
     }
 
+    public function testSegundaPaginaMostraOsLivrosDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['pagina' => '2'])->getBody();
+
+        self::assertStringContainsString(sprintf('Livro %02d', Pagina::ITENS + 1), $pagina);
+        self::assertStringNotContainsString('Livro 01', $pagina);
+    }
+
+    public function testPaginaDizQuaisLivrosEstaMostrando(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['pagina' => '2'])->getBody();
+
+        self::assertStringContainsString(
+            sprintf('Mostrando %1$d a %1$d de %1$d livros.', Pagina::ITENS + 1),
+            $pagina,
+        );
+    }
+
+    public function testSetasLevamParaAAnteriorEAProximaMantendoABusca(): void
+    {
+        $this->inserirLivrosNumerados(2 * Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Livro', 'pagina' => '2'])->getBody();
+
+        self::assertMatchesRegularExpression(
+            '#href="/livros\?busca=Livro&amp;pagina=1"[^>]*aria-label="Página anterior"#',
+            $pagina,
+        );
+        self::assertMatchesRegularExpression(
+            '#href="/livros\?busca=Livro&amp;pagina=3"[^>]*aria-label="Próxima página"#',
+            $pagina,
+        );
+    }
+
+    public function testNavegacaoTemUmLinkParaCadaPaginaEMarcaAAtual(): void
+    {
+        $this->inserirLivrosNumerados(2 * Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Livro', 'pagina' => '2'])->getBody();
+
+        self::assertMatchesRegularExpression('#href="/livros\?busca=Livro&amp;pagina=1"[^>]*>1</a>#', $pagina);
+        self::assertMatchesRegularExpression('#href="/livros\?busca=Livro&amp;pagina=3"[^>]*>3</a>#', $pagina);
+        self::assertMatchesRegularExpression('#aria-current="page"[^>]*>\s*<span[^>]*>2</span>#', $pagina);
+        self::assertStringNotContainsString('pagina=4', $pagina);
+    }
+
+    public function testPaginaAlemDaUltimaRedirecionaParaAUltima(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $resposta = $this->lista(['pagina' => '99']);
+
+        self::assertSame(303, $resposta->getStatusCode());
+        self::assertSame('/livros?pagina=2', $resposta->getHeaderLine('Location'));
+    }
+
+    public function testRedirecionamentoParaAUltimaPaginaMantemABusca(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $resposta = $this->lista(['busca' => 'Livro', 'pagina' => '99']);
+
+        self::assertSame('/livros?busca=Livro&pagina=2', $resposta->getHeaderLine('Location'));
+    }
+
+    public function testPaginaQueExisteNaoRedireciona(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        self::assertSame(200, $this->lista(['pagina' => '2'])->getStatusCode());
+    }
+
+    public function testAvisoDaUltimaGravacaoSobreviveAoRedirecionamento(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+        $this->sessao->guardar('aviso', 'Livro Dom Casmurro excluído.');
+
+        $this->lista(['pagina' => '99']);
+
+        $pagina = (string) $this->lista(['pagina' => '2'])->getBody();
+        self::assertStringContainsString('Livro Dom Casmurro excluído.', $pagina);
+    }
+
+    public function testListaQueCabeNumaPaginaNaoMostraANavegacao(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS);
+
+        $pagina = (string) $this->lista()->getBody();
+
+        self::assertStringNotContainsString('Páginas da lista de livros', $pagina);
+        self::assertStringNotContainsString('Próxima página', $pagina);
+    }
+
+    public function testBuscaContaTodosOsLivrosEncontradosENaoSoOsDaPagina(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Livro'])->getBody();
+
+        self::assertStringContainsString(sprintf('%d livros encontrados para', Pagina::ITENS + 1), $pagina);
+    }
+
     public function testListaVaziaDizComoComecar(): void
     {
         self::assertStringContainsString('Nenhum livro cadastrado.', (string) $this->lista()->getBody());
@@ -150,7 +258,7 @@ final class TelasDeLivrosTest extends TestCase
         self::assertStringContainsString('Valor precisa estar no formato 1.234,56.', $pagina);
         self::assertStringContainsString('value="Coraline"', $pagina);
         self::assertMatchesRegularExpression(sprintf('#id="autores-%d" checked#', $autor), $pagina);
-        self::assertSame([], $this->livros->listar());
+        self::assertSame(0, $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'))->totalDeItens);
     }
 
     public function testAlteraOLivroExistente(): void
@@ -194,10 +302,22 @@ final class TelasDeLivrosTest extends TestCase
         ];
     }
 
-    private function lista(): ResponseInterface
+    private function inserirLivrosNumerados(int $quantidade): void
+    {
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $this->livros->inserir(
+                Livro::criar(null, sprintf('Livro %02d', $numero), 'Rocco', '1', '2020', '10,00', [], []),
+            );
+        }
+    }
+
+    /**
+     * @param array<string, string> $consulta
+     */
+    private function lista(array $consulta = []): ResponseInterface
     {
         return (new ListaDeLivrosController($this->visao, $this->cadastro, $this->sessao, $this->formulario))
-            ->handle(new ServerRequest('GET', '/livros'));
+            ->handle((new ServerRequest('GET', '/livros'))->withQueryParams($consulta));
     }
 
     private function abrirFormulario(?int $codigo = null): ResponseInterface

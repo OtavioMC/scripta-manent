@@ -10,6 +10,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
 use ScriptaManent\Http\Apresentador\FormularioDeAutorApresentador;
 use ScriptaManent\Http\Campos;
+use ScriptaManent\Http\EnderecoDaPagina;
 use ScriptaManent\Http\Sessao;
 use ScriptaManent\Http\Visao;
 
@@ -25,11 +26,16 @@ final readonly class ListaDeAutoresController implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $aviso = $this->sessao->retirar('aviso');
         $busca = Campos::busca($request);
+        $pedida = Campos::pagina($request);
+        $lista = $this->cadastro->pagina($busca, $pedida);
+        if ($lista->pagina->numero !== $pedida->numero) {
+            return $this->visao->redirecionar(EnderecoDaPagina::de('/autores', $busca, $lista->pagina->numero));
+        }
+        $aviso = $this->sessao->retirar('aviso');
 
         return $this->visao->responder('autores/lista.html.twig', [
-            'autores' => $this->cadastro->listar($busca),
+            'lista' => $lista,
             'busca' => $busca->texto,
             'aviso' => is_string($aviso) ? $aviso : null,
             'bloqueio' => $this->bloqueio($this->sessao->retirar('bloqueio')),

@@ -3,6 +3,7 @@
 {% block menu_ativo %}/autores{% endblock %}
 
 {% import 'macros/busca.html.twig' as busca_ %}
+{% import 'macros/paginacao.html.twig' as paginacao %}
 
 {% block colecao %}autores{% endblock %}
 
@@ -25,7 +26,8 @@
     {{ busca_.campo('/autores', busca, 'Buscar autores', 'Buscar pelo nome do autor') }}
 
     <div data-resultados>
-        {{ busca_.situacao('/autores', busca, autores|length, 'autor encontrado', 'autores encontrados') }}
+        {% set autores = lista.itens %}
+        {{ busca_.situacao('/autores', busca, lista.totalDeItens, 'autor encontrado', 'autores encontrados') }}
 
     {% if autores is empty and busca %}
         {{ busca_.nadaEncontrado(busca, '/autores', 'Confira a grafia ou busque só pelo sobrenome.') }}
@@ -73,6 +75,7 @@
                 </table>
             </div>
         </div>
+        {{ paginacao.navegacao('/autores', busca, lista, 'autores') }}
     {% endif %}
     </div>
 

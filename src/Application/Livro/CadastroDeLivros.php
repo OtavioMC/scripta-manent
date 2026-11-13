@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ScriptaManent\Application\Livro;
 
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\ErroDeValidacao;
 use ScriptaManent\Domain\Livro\Livro;
 
@@ -15,11 +17,11 @@ final readonly class CadastroDeLivros
     }
 
     /**
-     * @return list<LivroNaLista>
+     * @return ListaPaginada<LivroNaLista>
      */
-    public function listar(?Busca $busca = null): array
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
     {
-        return $this->repositorio->listar($busca);
+        return $this->repositorio->pagina($busca, $pagina);
     }
 
     public function buscar(int $codigo): ?Livro

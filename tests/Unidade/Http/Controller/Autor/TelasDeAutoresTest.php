@@ -9,6 +9,7 @@ use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Http\Apresentador\FormularioDeAutorApresentador;
 use ScriptaManent\Http\Controller\Autor\ExcluirAutorController;
@@ -101,6 +102,66 @@ final class TelasDeAutoresTest extends TestCase
         self::assertStringContainsString('Machado de Assis', $pagina);
         self::assertStringNotContainsString('Clarice Lispector', $pagina);
         self::assertStringContainsString('1 autor encontrado para “machado”.', $pagina);
+    }
+
+    public function testSegundaPaginaMostraOsAutoresDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['pagina' => '2'])->getBody();
+
+        self::assertStringContainsString(sprintf('Autor %02d', Pagina::ITENS + 1), $pagina);
+        self::assertStringNotContainsString('Autor 01', $pagina);
+        self::assertStringContainsString(
+            sprintf('Mostrando %1$d a %1$d de %1$d autores.', Pagina::ITENS + 1),
+            $pagina,
+        );
+    }
+
+    public function testNavegacaoDeAutoresTemOsNumerosEMantemABusca(): void
+    {
+        $this->inserirAutoresNumerados(2 * Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Autor', 'pagina' => '2'])->getBody();
+
+        self::assertMatchesRegularExpression('#href="/autores\?busca=Autor&amp;pagina=1"[^>]*>1</a>#', $pagina);
+        self::assertMatchesRegularExpression(
+            '#href="/autores\?busca=Autor&amp;pagina=3"[^>]*aria-label="Próxima página"#',
+            $pagina,
+        );
+        self::assertStringContainsString('Páginas da lista de autores', $pagina);
+    }
+
+    public function testBuscaContaTodosOsAutoresEncontradosENaoSoOsDaPagina(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['busca' => 'Autor'])->getBody();
+
+        self::assertStringContainsString(sprintf('%d autores encontrados para', Pagina::ITENS + 1), $pagina);
+    }
+
+    public function testPaginaDeAutoresAlemDaUltimaRedirecionaParaAUltimaMantendoABusca(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 1);
+
+        $resposta = $this->lista(['busca' => 'Autor', 'pagina' => '99']);
+
+        self::assertSame(303, $resposta->getStatusCode());
+        self::assertSame('/autores?busca=Autor&pagina=2', $resposta->getHeaderLine('Location'));
+    }
+
+    public function testAvisoSobreviveAoRedirecionamentoDaPaginaDeAutores(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 1);
+        $this->sessao->guardar('aviso', 'Autor Clarice Lispector excluído.');
+
+        $this->lista(['pagina' => '99']);
+
+        self::assertStringContainsString(
+            'Autor Clarice Lispector excluído.',
+            (string) $this->lista(['pagina' => '2'])->getBody(),
+        );
     }
 
     public function testModalDeBloqueioLevaParaOsLivrosDoAutor(): void
@@ -214,10 +275,20 @@ final class TelasDeAutoresTest extends TestCase
         self::assertSame(404, $this->excluir(999)->getStatusCode());
     }
 
-    private function lista(): ResponseInterface
+    private function inserirAutoresNumerados(int $quantidade): void
+    {
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $this->repositorio->inserir(Autor::novo(sprintf('Autor %02d', $numero)));
+        }
+    }
+
+    /**
+     * @param array<string, string> $consulta
+     */
+    private function lista(array $consulta = []): ResponseInterface
     {
         return (new ListaDeAutoresController($this->visao, $this->cadastro, $this->sessao, $this->formulario))
-            ->handle(new ServerRequest('GET', '/autores'));
+            ->handle((new ServerRequest('GET', '/autores'))->withQueryParams($consulta));
     }
 
     private function abrirFormulario(?int $codigo = null): ResponseInterface

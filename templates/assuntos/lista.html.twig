@@ -3,6 +3,7 @@
 {% block menu_ativo %}/assuntos{% endblock %}
 
 {% import 'macros/busca.html.twig' as busca_ %}
+{% import 'macros/paginacao.html.twig' as paginacao %}
 
 {% block colecao %}assuntos{% endblock %}
 
@@ -25,7 +26,8 @@
     {{ busca_.campo('/assuntos', busca, 'Buscar assuntos', 'Buscar pela descrição do assunto') }}
 
     <div data-resultados>
-        {{ busca_.situacao('/assuntos', busca, assuntos|length, 'assunto encontrado', 'assuntos encontrados') }}
+        {% set assuntos = lista.itens %}
+        {{ busca_.situacao('/assuntos', busca, lista.totalDeItens, 'assunto encontrado', 'assuntos encontrados') }}
 
     {% if assuntos is empty and busca %}
         {{ busca_.nadaEncontrado(busca, '/assuntos', 'Confira a grafia ou busque por parte da descrição.') }}
@@ -74,6 +76,7 @@
                 </table>
             </div>
         </div>
+        {{ paginacao.navegacao('/assuntos', busca, lista, 'assuntos') }}
     {% endif %}
     </div>
 

@@ -6,6 +6,7 @@ namespace ScriptaManent\Tests\Integracao;
 
 use PHPUnit\Framework\TestCase;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use ScriptaManent\Infrastructure\Banco\Conexao;
@@ -130,6 +131,73 @@ final class RepositorioDeAutoresPdoTest extends TestCase
         }
 
         self::assertNotNull($this->repositorio->buscar($autor));
+    }
+
+    public function testSegundaPaginaTrazOsAutoresDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(Pagina::ITENS + 5, $lista->totalDeItens);
+        self::assertSame(
+            ['Zéfiro 21', 'Zéfiro 22', 'Zéfiro 23', 'Zéfiro 24', 'Zéfiro 25'],
+            array_map(static fn (Autor $autor): string => $autor->nome, $lista->itens),
+        );
+    }
+
+    public function testPrimeiraPaginaTrazUmaPaginaCheiaEmOrdemDeNome(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('1'));
+
+        self::assertCount(Pagina::ITENS, $lista->itens);
+        self::assertSame('Zéfiro 01', $lista->itens[0]->nome ?? null);
+    }
+
+    public function testPaginaAlemDaUltimaTrazAUltima(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('9'));
+
+        self::assertSame(2, $lista->pagina->numero);
+        self::assertCount(5, $lista->itens);
+    }
+
+    public function testExcluirOUnicoAutorDaSegundaPaginaVoltaParaAPrimeira(): void
+    {
+        $codigos = $this->inserirAutoresNumerados(Pagina::ITENS + 1);
+        $this->repositorio->excluir($codigos[Pagina::ITENS]);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(1, $lista->pagina->numero);
+        self::assertSame(Pagina::ITENS, $lista->totalDeItens);
+        self::assertCount(Pagina::ITENS, $lista->itens);
+    }
+
+    public function testBuscaSemResultadoTrazPaginaVazia(): void
+    {
+        $lista = $this->repositorio->pagina(Busca::deTexto('nenhum autor tem este nome'), Pagina::pedidaNaUrl('3'));
+
+        self::assertSame(0, $lista->totalDeItens);
+        self::assertSame([], $lista->itens);
+        self::assertSame(1, $lista->pagina->numero);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function inserirAutoresNumerados(int $quantidade): array
+    {
+        $codigos = [];
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $codigos[] = (int) $this->repositorio->inserir(Autor::novo(sprintf('Zéfiro %02d', $numero)))->codigo;
+        }
+
+        return $codigos;
     }
 
     private function livro(string $titulo): int

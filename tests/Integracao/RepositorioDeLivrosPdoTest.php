@@ -6,6 +6,8 @@ namespace ScriptaManent\Tests\Integracao;
 
 use PHPUnit\Framework\TestCase;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\Livro\LivroNaLista;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\ErroDeValidacao;
 use ScriptaManent\Domain\Livro\Livro;
 use ScriptaManent\Infrastructure\Banco\Conexao;
@@ -113,10 +115,10 @@ final class RepositorioDeLivrosPdoTest extends TestCase
             [$this->assunto('Jardinagem'), $this->assunto('Botânica')],
         ));
 
-        $livros = array_values(array_filter(
-            $this->repositorio->listar(),
-            static fn ($livro): bool => $livro->titulo === 'Manual do Pequeno Jardim',
-        ));
+        $livros = $this->repositorio->pagina(
+            Busca::deTexto('Manual do Pequeno Jardim'),
+            Pagina::pedidaNaUrl('1'),
+        )->itens;
 
         self::assertCount(1, $livros);
         self::assertSame(['Jorge Vasques', 'Otília Brandão'], $livros[0]->autores);
@@ -141,7 +143,7 @@ final class RepositorioDeLivrosPdoTest extends TestCase
 
         $titulos = array_map(
             static fn ($livro): string => $livro->titulo,
-            $this->repositorio->listar(Busca::deTexto('jardinagem urbana')),
+            $this->repositorio->pagina(Busca::deTexto('jardinagem urbana'), Pagina::pedidaNaUrl('1'))->itens,
         );
 
         self::assertSame(['Manual do Pequeno Jardim'], $titulos);
@@ -154,6 +156,153 @@ final class RepositorioDeLivrosPdoTest extends TestCase
         $this->repositorio->inserir(
             Livro::criar(null, 'Manual do Jardim', 'Horizonte', '1', '2020', '50,00', [999999], []),
         );
+    }
+
+    public function testSegundaPaginaTrazOsLivrosDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(Pagina::ITENS + 5, $lista->totalDeItens);
+        self::assertSame(
+            ['Zéfiro 21', 'Zéfiro 22', 'Zéfiro 23', 'Zéfiro 24', 'Zéfiro 25'],
+            array_map(static fn (LivroNaLista $livro): string => $livro->titulo, $lista->itens),
+        );
+    }
+
+    public function testPrimeiraPaginaTrazUmaPaginaCheiaEmOrdemDeTitulo(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('1'));
+
+        self::assertCount(Pagina::ITENS, $lista->itens);
+        self::assertSame('Zéfiro 01', $lista->itens[0]->titulo ?? null);
+    }
+
+    public function testPaginaAlemDaUltimaTrazAUltima(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('9'));
+
+        self::assertSame(2, $lista->pagina->numero);
+        self::assertCount(5, $lista->itens);
+    }
+
+    public function testPaginaTrazOsNomesDosAutoresEAssuntos(): void
+    {
+        $autor = $this->autor('Otília Brandão');
+        $assunto = $this->assunto('Jardinagem');
+        $this->repositorio->inserir(
+            Livro::criar(null, 'Zéfiro e o Jardim', 'Horizonte', '1', '2020', '10,00', [$autor], [$assunto]),
+        );
+
+        $livro = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('1'))->itens[0] ?? null;
+
+        self::assertNotNull($livro);
+        self::assertSame(['Otília Brandão'], $livro->autores);
+        self::assertSame(['Jardinagem'], $livro->assuntos);
+    }
+
+    public function testBuscaSemResultadoTrazPaginaVazia(): void
+    {
+        $lista = $this->repositorio->pagina(Busca::deTexto('nenhum livro tem este texto'), Pagina::pedidaNaUrl('3'));
+
+        self::assertSame(0, $lista->totalDeItens);
+        self::assertSame([], $lista->itens);
+        self::assertSame(1, $lista->pagina->numero);
+    }
+
+    public function testPaginaCheiaNaoAbreASegundaPagina(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(1, $lista->pagina->numero);
+        self::assertSame(1, $lista->quantidadeDePaginas());
+        self::assertCount(Pagina::ITENS, $lista->itens);
+        self::assertNull($lista->proximaPagina());
+    }
+
+    public function testExcluirOUnicoLivroDaSegundaPaginaVoltaParaAPrimeira(): void
+    {
+        $codigos = $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+        $this->repositorio->excluir($codigos[Pagina::ITENS]);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(1, $lista->pagina->numero);
+        self::assertSame(Pagina::ITENS, $lista->totalDeItens);
+        self::assertSame(1, $lista->quantidadeDePaginas());
+        self::assertCount(Pagina::ITENS, $lista->itens);
+    }
+
+    public function testDuasPaginasCheiasNaoAbremUmaTerceiraVazia(): void
+    {
+        $this->inserirLivrosNumerados(2 * Pagina::ITENS);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('3'));
+
+        self::assertSame(2, $lista->pagina->numero);
+        self::assertCount(Pagina::ITENS, $lista->itens);
+        self::assertSame(sprintf('Zéfiro %02d', 2 * Pagina::ITENS), $lista->itens[Pagina::ITENS - 1]->titulo ?? null);
+    }
+
+    public function testCadastrarUmLivroAlemDaPaginaCheiaAbreASegundaPagina(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS);
+        $this->repositorio->inserir(
+            Livro::criar(null, 'Zéfiro 99', 'Horizonte', '1', '2020', '10,00', [], []),
+        );
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(2, $lista->pagina->numero);
+        self::assertSame(
+            ['Zéfiro 99'],
+            array_map(static fn (LivroNaLista $livro): string => $livro->titulo, $lista->itens),
+        );
+    }
+
+    public function testExcluirLivroDaPrimeiraPaginaTrazOPrimeiroDaSegunda(): void
+    {
+        $codigos = $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+        $this->repositorio->excluir($codigos[0]);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('1'));
+
+        self::assertCount(Pagina::ITENS, $lista->itens);
+        self::assertSame('Zéfiro 02', $lista->itens[0]->titulo ?? null);
+        self::assertSame(
+            sprintf('Zéfiro %02d', Pagina::ITENS + 1),
+            $lista->itens[Pagina::ITENS - 1]->titulo ?? null,
+        );
+        self::assertNull($lista->proximaPagina());
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function inserirLivrosNumerados(int $quantidade): array
+    {
+        $codigos = [];
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $codigos[] = (int) $this->repositorio->inserir(Livro::criar(
+                null,
+                sprintf('Zéfiro %02d', $numero),
+                'Horizonte',
+                '1',
+                '2020',
+                '10,00',
+                [],
+                [],
+            ))->codigo;
+        }
+
+        return $codigos;
     }
 
     private function autor(string $nome): int
