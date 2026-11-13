@@ -11,6 +11,7 @@ use Psr\Http\Message\ResponseInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
 use ScriptaManent\Application\Livro\CadastroDeLivros;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\Livro\Livro;
@@ -81,6 +82,16 @@ final class TelasDeLivrosTest extends TestCase
         self::assertStringContainsString(sprintf('data-acao="/livros/%d"', (int) $livro->codigo), $pagina);
         self::assertStringContainsString('&quot;valor&quot;:&quot;1.239,90&quot;', $pagina);
         self::assertStringContainsString(sprintf('&quot;autores&quot;:[%d]', $autor), $pagina);
+    }
+
+    public function testSegundaPaginaMostraOsLivrosDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $pagina = (string) $this->lista(['pagina' => '2'])->getBody();
+
+        self::assertStringContainsString(sprintf('Livro %02d', Pagina::ITENS + 1), $pagina);
+        self::assertStringNotContainsString('Livro 01', $pagina);
     }
 
     public function testListaVaziaDizComoComecar(): void
@@ -194,10 +205,22 @@ final class TelasDeLivrosTest extends TestCase
         ];
     }
 
-    private function lista(): ResponseInterface
+    private function inserirLivrosNumerados(int $quantidade): void
+    {
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $this->livros->inserir(
+                Livro::criar(null, sprintf('Livro %02d', $numero), 'Rocco', '1', '2020', '10,00', [], []),
+            );
+        }
+    }
+
+    /**
+     * @param array<string, string> $consulta
+     */
+    private function lista(array $consulta = []): ResponseInterface
     {
         return (new ListaDeLivrosController($this->visao, $this->cadastro, $this->sessao, $this->formulario))
-            ->handle(new ServerRequest('GET', '/livros'));
+            ->handle((new ServerRequest('GET', '/livros'))->withQueryParams($consulta));
     }
 
     private function abrirFormulario(?int $codigo = null): ResponseInterface
