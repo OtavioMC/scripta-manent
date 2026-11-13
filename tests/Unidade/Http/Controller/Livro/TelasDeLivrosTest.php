@@ -134,6 +134,16 @@ final class TelasDeLivrosTest extends TestCase
         self::assertStringNotContainsString('pagina=4', $pagina);
     }
 
+    public function testPaginaAlemDaUltimaRedirecionaParaAUltima(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 1);
+
+        $resposta = $this->lista(['pagina' => '99']);
+
+        self::assertSame(303, $resposta->getStatusCode());
+        self::assertSame('/livros?pagina=2', $resposta->getHeaderLine('Location'));
+    }
+
     public function testListaQueCabeNumaPaginaNaoMostraANavegacao(): void
     {
         $this->inserirLivrosNumerados(Pagina::ITENS);
