@@ -34,6 +34,14 @@ final readonly class ListaPaginada
         return $this->pagina->numero < $this->quantidadeDePaginas() ? $this->pagina->numero + 1 : null;
     }
 
+    /**
+     * @return list<int|null>
+     */
+    public function paginasNaNavegacao(): array
+    {
+        return [];
+    }
+
     public function primeiroItemExibido(): int
     {
         return $this->totalDeItens === 0 ? 0 : $this->pagina->quantidadeDeItensAntes() + 1;

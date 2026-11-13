@@ -35,6 +35,11 @@ final class ListaPaginadaTest extends TestCase
         self::assertNull(self::lista(3 * Pagina::ITENS + 1, '4')->proximaPagina());
     }
 
+    public function testPoucasPaginasAparecemTodasNaNavegacao(): void
+    {
+        self::assertSame([1, 2, 3, 4], self::lista(3 * Pagina::ITENS + 1, '2')->paginasNaNavegacao());
+    }
+
     public function testSegundaPaginaExibeOsItensDepoisDaPrimeiraPaginaCheia(): void
     {
         $lista = self::lista(3 * Pagina::ITENS + 1, '2');
