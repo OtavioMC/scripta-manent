@@ -171,6 +171,50 @@ final class RepositorioDeLivrosPdoTest extends TestCase
         );
     }
 
+    public function testPrimeiraPaginaTrazUmaPaginaCheiaEmOrdemDeTitulo(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('1'));
+
+        self::assertCount(Pagina::ITENS, $lista->itens);
+        self::assertSame('Zéfiro 01', $lista->itens[0]->titulo ?? null);
+    }
+
+    public function testPaginaAlemDaUltimaTrazAUltima(): void
+    {
+        $this->inserirLivrosNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('9'));
+
+        self::assertSame(2, $lista->pagina->numero);
+        self::assertCount(5, $lista->itens);
+    }
+
+    public function testPaginaTrazOsNomesDosAutoresEAssuntos(): void
+    {
+        $autor = $this->autor('Otília Brandão');
+        $assunto = $this->assunto('Jardinagem');
+        $this->repositorio->inserir(
+            Livro::criar(null, 'Zéfiro e o Jardim', 'Horizonte', '1', '2020', '10,00', [$autor], [$assunto]),
+        );
+
+        $livro = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('1'))->itens[0] ?? null;
+
+        self::assertNotNull($livro);
+        self::assertSame(['Otília Brandão'], $livro->autores);
+        self::assertSame(['Jardinagem'], $livro->assuntos);
+    }
+
+    public function testBuscaSemResultadoTrazPaginaVazia(): void
+    {
+        $lista = $this->repositorio->pagina(Busca::deTexto('nenhum livro tem este texto'), Pagina::pedidaNaUrl('3'));
+
+        self::assertSame(0, $lista->totalDeItens);
+        self::assertSame([], $lista->itens);
+        self::assertSame(1, $lista->pagina->numero);
+    }
+
     private function inserirLivrosNumerados(int $quantidade): void
     {
         for ($numero = 1; $numero <= $quantidade; $numero++) {
