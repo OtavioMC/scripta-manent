@@ -13,11 +13,6 @@ use ScriptaManent\Domain\Livro\Livro;
 interface RepositorioDeLivros
 {
     /**
-     * @return list<LivroNaLista>
-     */
-    public function listar(?Busca $busca = null): array;
-
-    /**
      * @return ListaPaginada<LivroNaLista>
      */
     public function pagina(Busca $busca, Pagina $pagina): ListaPaginada;

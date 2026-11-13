@@ -20,17 +20,6 @@ final readonly class RepositorioDeLivrosEmCache implements RepositorioDeLivros
     ) {
     }
 
-    public function listar(?Busca $busca = null): array
-    {
-        return $this->cache->lembrar(
-            'livros',
-            'lista:' . ($busca->texto ?? ''),
-            fn (): array => $this->repositorio->listar($busca),
-            static fn (array $livros): array => array_map(self::paraDados(...), $livros),
-            static fn (mixed $dados): array => array_map(self::deDados(...), Dados::lista($dados)),
-        );
-    }
-
     public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
     {
         return $this->cache->lembrar(

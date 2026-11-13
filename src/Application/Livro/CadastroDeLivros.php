@@ -17,14 +17,6 @@ final readonly class CadastroDeLivros
     }
 
     /**
-     * @return list<LivroNaLista>
-     */
-    public function listar(?Busca $busca = null): array
-    {
-        return $this->repositorio->listar($busca);
-    }
-
-    /**
      * @return ListaPaginada<LivroNaLista>
      */
     public function pagina(Busca $busca, Pagina $pagina): ListaPaginada

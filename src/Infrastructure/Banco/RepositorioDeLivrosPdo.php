@@ -39,15 +39,6 @@ final readonly class RepositorioDeLivrosPdo implements RepositorioDeLivros
          FROM Livro";
     private const string ORDEM_DA_LISTA = ' ORDER BY Livro.Titulo, Livro.Codl';
 
-    public function listar(?Busca $busca = null): array
-    {
-        [$filtro, $parametros] = $this->filtroDaBusca($busca);
-        $consulta = $this->conexao->pdo()->prepare(self::COLUNAS_DA_LISTA . $filtro . self::ORDEM_DA_LISTA);
-        $consulta->execute($parametros);
-
-        return array_values(array_map($this->livroNaLista(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
-    }
-
     public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
     {
         [$filtro, $parametros] = $this->filtroDaBusca($busca);
@@ -76,9 +67,9 @@ final readonly class RepositorioDeLivrosPdo implements RepositorioDeLivros
     /**
      * @return array{string, array<string, string>}
      */
-    private function filtroDaBusca(?Busca $busca): array
+    private function filtroDaBusca(Busca $busca): array
     {
-        if ($busca === null || $busca->vazia()) {
+        if ($busca->vazia()) {
             return ['', []];
         }
         $termo = Like::contendo($busca->texto);

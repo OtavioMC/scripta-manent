@@ -26,9 +26,24 @@ final class RepositorioDeLivrosEmMemoria implements RepositorioDeLivros
     ) {
     }
 
-    public function listar(?Busca $busca = null): array
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
     {
         $this->listagens++;
+        $encontrados = $this->encontrados($busca);
+        $pagina = $pagina->semPassarDaUltima(count($encontrados));
+
+        return new ListaPaginada(
+            array_slice($encontrados, $pagina->quantidadeDeItensAntes(), Pagina::ITENS),
+            count($encontrados),
+            $pagina,
+        );
+    }
+
+    /**
+     * @return list<LivroNaLista>
+     */
+    private function encontrados(Busca $busca): array
+    {
         $lista = array_map(fn (Livro $livro): LivroNaLista => new LivroNaLista(
             (int) $livro->codigo,
             $livro->titulo,
@@ -45,22 +60,10 @@ final class RepositorioDeLivrosEmMemoria implements RepositorioDeLivros
 
         return array_values(array_filter(
             $lista,
-            static fn (LivroNaLista $livro): bool => $busca === null || $busca->vazia()
+            static fn (LivroNaLista $livro): bool => $busca->vazia()
                 || mb_stripos(implode(' ', [$livro->titulo, ...$livro->autores, ...$livro->assuntos]), $busca->texto)
                     !== false,
         ));
-    }
-
-    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
-    {
-        $todos = $this->listar($busca);
-        $pagina = $pagina->semPassarDaUltima(count($todos));
-
-        return new ListaPaginada(
-            array_slice($todos, $pagina->quantidadeDeItensAntes(), Pagina::ITENS),
-            count($todos),
-            $pagina,
-        );
     }
 
     public function buscar(int $codigo): ?Livro
