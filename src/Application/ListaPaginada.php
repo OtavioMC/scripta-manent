@@ -39,7 +39,27 @@ final readonly class ListaPaginada
      */
     public function paginasNaNavegacao(): array
     {
-        return [];
+        $ultima = $this->quantidadeDePaginas();
+        $atual = $this->pagina->numero;
+        $visiveis = array_unique(array_filter(
+            [1, $atual - 1, $atual, $atual + 1, $ultima],
+            static fn (int $numero): bool => $numero >= 1 && $numero <= $ultima,
+        ));
+        sort($visiveis);
+
+        $navegacao = [];
+        $anterior = 0;
+        foreach ($visiveis as $numero) {
+            if ($numero - $anterior === 2) {
+                $navegacao[] = $numero - 1;
+            } elseif ($numero - $anterior > 2) {
+                $navegacao[] = null;
+            }
+            $navegacao[] = $numero;
+            $anterior = $numero;
+        }
+
+        return $navegacao;
     }
 
     public function primeiroItemExibido(): int
