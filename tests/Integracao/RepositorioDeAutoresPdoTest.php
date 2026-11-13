@@ -6,6 +6,7 @@ namespace ScriptaManent\Tests\Integracao;
 
 use PHPUnit\Framework\TestCase;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use ScriptaManent\Infrastructure\Banco\Conexao;
@@ -130,6 +131,26 @@ final class RepositorioDeAutoresPdoTest extends TestCase
         }
 
         self::assertNotNull($this->repositorio->buscar($autor));
+    }
+
+    public function testSegundaPaginaTrazOsAutoresDepoisDaPrimeiraPaginaCheia(): void
+    {
+        $this->inserirAutoresNumerados(Pagina::ITENS + 5);
+
+        $lista = $this->repositorio->pagina(Busca::deTexto('zéfiro'), Pagina::pedidaNaUrl('2'));
+
+        self::assertSame(Pagina::ITENS + 5, $lista->totalDeItens);
+        self::assertSame(
+            ['Zéfiro 21', 'Zéfiro 22', 'Zéfiro 23', 'Zéfiro 24', 'Zéfiro 25'],
+            array_map(static fn (Autor $autor): string => $autor->nome, $lista->itens),
+        );
+    }
+
+    private function inserirAutoresNumerados(int $quantidade): void
+    {
+        for ($numero = 1; $numero <= $quantidade; $numero++) {
+            $this->repositorio->inserir(Autor::novo(sprintf('Zéfiro %02d', $numero)));
+        }
     }
 
     private function livro(string $titulo): int

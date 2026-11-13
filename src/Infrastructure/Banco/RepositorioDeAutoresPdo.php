@@ -8,6 +8,8 @@ use PDO;
 use PDOException;
 use ScriptaManent\Application\Autor\RepositorioDeAutores;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 use UnexpectedValueException;
@@ -30,6 +32,11 @@ final readonly class RepositorioDeAutoresPdo implements RepositorioDeAutores
         $consulta->execute($parametros);
 
         return array_values(array_map($this->autorDaLinha(...), $consulta->fetchAll(PDO::FETCH_ASSOC)));
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        return new ListaPaginada([], 0, $pagina);
     }
 
     public function buscar(int $codigo): ?Autor

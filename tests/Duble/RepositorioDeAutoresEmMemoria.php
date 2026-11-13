@@ -6,6 +6,8 @@ namespace ScriptaManent\Tests\Duble;
 
 use ScriptaManent\Application\Autor\RepositorioDeAutores;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Autor\Autor;
 use ScriptaManent\Domain\ExclusaoBloqueada;
 
@@ -40,6 +42,18 @@ final class RepositorioDeAutoresEmMemoria implements RepositorioDeAutores
             static fn (Autor $autor): bool => $busca === null || $busca->vazia()
                 || mb_stripos($autor->nome, $busca->texto) !== false,
         ));
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        $encontrados = $this->listar($busca);
+        $pagina = $pagina->semPassarDaUltima(count($encontrados));
+
+        return new ListaPaginada(
+            array_slice($encontrados, $pagina->quantidadeDeItensAntes(), Pagina::ITENS),
+            count($encontrados),
+            $pagina,
+        );
     }
 
     public function buscar(int $codigo): ?Autor

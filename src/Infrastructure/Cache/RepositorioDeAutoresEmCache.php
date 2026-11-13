@@ -6,6 +6,8 @@ namespace ScriptaManent\Infrastructure\Cache;
 
 use ScriptaManent\Application\Autor\RepositorioDeAutores;
 use ScriptaManent\Application\Busca;
+use ScriptaManent\Application\ListaPaginada;
+use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Autor\Autor;
 
 final readonly class RepositorioDeAutoresEmCache implements RepositorioDeAutores
@@ -32,6 +34,11 @@ final readonly class RepositorioDeAutoresEmCache implements RepositorioDeAutores
                 return Autor::existente(Dados::inteiro($registro, 'codigo'), Dados::texto($registro, 'nome'));
             }, Dados::lista($dados)),
         );
+    }
+
+    public function pagina(Busca $busca, Pagina $pagina): ListaPaginada
+    {
+        return $this->repositorio->pagina($busca, $pagina);
     }
 
     public function buscar(int $codigo): ?Autor
