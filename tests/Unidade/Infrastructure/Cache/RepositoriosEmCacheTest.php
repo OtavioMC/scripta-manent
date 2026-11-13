@@ -124,7 +124,7 @@ final class RepositoriosEmCacheTest extends TestCase
         self::assertSame(($antes['relatorio'] ?? 0) + 1, $depois['relatorio'] ?? null);
     }
 
-    public function testListaDeLivrosVoltaDoCacheComTodosOsCampos(): void
+    public function testPaginaDeLivrosVoltaDoCacheComTodosOsCampos(): void
     {
         $autor = (int) $this->autoresNoBanco->inserir(Autor::novo('Neil Gaiman'))->codigo;
         $assunto = (int) $this->assuntosNoBanco->inserir(Assunto::novo('Fantasia'))->codigo;
@@ -132,9 +132,9 @@ final class RepositoriosEmCacheTest extends TestCase
             Livro::criar(null, 'Coraline', 'Intrínseca', '1', '2002', '1.239,90', [$autor], [$assunto]),
         );
 
-        $doBanco = $this->livros->listar();
+        $doBanco = $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'));
 
-        self::assertEquals($doBanco, $this->livros->listar());
+        self::assertEquals($doBanco, $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1')));
         self::assertSame(1, $this->livrosNoBanco->listagens);
     }
 
@@ -239,7 +239,7 @@ final class RepositoriosEmCacheTest extends TestCase
         $this->autoresNoBanco->inserir(Autor::novo('Cadastrado Depois'));
         $this->autores->listar();
         $this->assuntos->listar();
-        $this->livros->listar();
+        $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'));
         $fonte = $this->fonteQueConta();
         $relatorio = new FonteDoRelatorioEmCache($fonte, $this->cache);
         $relatorio->linhas();
@@ -249,7 +249,7 @@ final class RepositoriosEmCacheTest extends TestCase
 
         self::assertSame([], $this->autores->listar());
         $this->assuntos->listar();
-        $this->livros->listar();
+        $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'));
         $relatorio->linhas();
         self::assertSame($listagensDeAutores + 1, $this->autoresNoBanco->listagens);
         self::assertSame(2, $this->assuntosNoBanco->listagens);

@@ -115,10 +115,10 @@ final class RepositorioDeLivrosPdoTest extends TestCase
             [$this->assunto('Jardinagem'), $this->assunto('Botânica')],
         ));
 
-        $livros = array_values(array_filter(
-            $this->repositorio->listar(),
-            static fn ($livro): bool => $livro->titulo === 'Manual do Pequeno Jardim',
-        ));
+        $livros = $this->repositorio->pagina(
+            Busca::deTexto('Manual do Pequeno Jardim'),
+            Pagina::pedidaNaUrl('1'),
+        )->itens;
 
         self::assertCount(1, $livros);
         self::assertSame(['Jorge Vasques', 'Otília Brandão'], $livros[0]->autores);
@@ -143,7 +143,7 @@ final class RepositorioDeLivrosPdoTest extends TestCase
 
         $titulos = array_map(
             static fn ($livro): string => $livro->titulo,
-            $this->repositorio->listar(Busca::deTexto('jardinagem urbana')),
+            $this->repositorio->pagina(Busca::deTexto('jardinagem urbana'), Pagina::pedidaNaUrl('1'))->itens,
         );
 
         self::assertSame(['Manual do Pequeno Jardim'], $titulos);

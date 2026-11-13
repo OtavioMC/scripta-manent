@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use ScriptaManent\Application\Assunto\CadastroDeAssuntos;
 use ScriptaManent\Application\Autor\CadastroDeAutores;
+use ScriptaManent\Application\Busca;
 use ScriptaManent\Application\Livro\CadastroDeLivros;
 use ScriptaManent\Application\Pagina;
 use ScriptaManent\Domain\Assunto\Assunto;
@@ -257,7 +258,7 @@ final class TelasDeLivrosTest extends TestCase
         self::assertStringContainsString('Valor precisa estar no formato 1.234,56.', $pagina);
         self::assertStringContainsString('value="Coraline"', $pagina);
         self::assertMatchesRegularExpression(sprintf('#id="autores-%d" checked#', $autor), $pagina);
-        self::assertSame([], $this->livros->listar());
+        self::assertSame(0, $this->livros->pagina(Busca::deTexto(''), Pagina::pedidaNaUrl('1'))->totalDeItens);
     }
 
     public function testAlteraOLivroExistente(): void
