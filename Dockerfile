@@ -1,6 +1,6 @@
 FROM composer:2.11.1 AS composer
 
-FROM php:8.4.27-fpm-alpine3.24 AS base
+FROM php:8.4.28-fpm-alpine3.24 AS base
 WORKDIR /app
 RUN docker-php-ext-install pdo_mysql
 
@@ -37,7 +37,7 @@ COPY banco/003-dados-exemplo.sql banco/
 COPY src/ src/
 USER www-data
 
-FROM nginx:1.30.6-alpine AS web
+FROM nginx:1.30.7-alpine AS web
 COPY docker/nginx/comum.conf /etc/nginx/comum.conf
 COPY docker/nginx/producao.conf /etc/nginx/conf.d/default.conf
 COPY --from=dependencias /app/vendor/twbs/bootstrap/dist/ /app/bootstrap/
